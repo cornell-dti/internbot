@@ -1,4 +1,4 @@
-import { type VercelRequest, type VercelResponse } from '@vercel/node';
+import type { RequestHandler } from '@sveltejs/kit';
 import { WebClient } from '@slack/web-api';
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
@@ -28,7 +28,7 @@ const createGroupDMs = async (userPairs: [string, string][]) => {
 	}
 };
 
-export default async (req: VercelRequest, res: VercelResponse) => {
+export const POST: RequestHandler = async (req) => {
 	try {
 		const users = await getAllUsers();
 		const userPairs: [string, string][] = [];
@@ -39,9 +39,9 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
 		await createGroupDMs(userPairs);
 
-		res.status(200).send('Weekly DMs sent.');
+		return new Response('DMs sent.');
 	} catch (error) {
 		console.error('Error sending DMs:', error);
-		res.status(500).send('Error sending DMs');
+		return new Response('Error sending DMs', { status: 500 });
 	}
 };

@@ -1,4 +1,4 @@
-import { type VercelRequest, type VercelResponse } from '@vercel/node';
+import type { RequestHandler } from '@sveltejs/kit';
 import { WebClient } from '@slack/web-api';
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
@@ -29,18 +29,21 @@ const sendMessageToUser = async (userId: string, message: string) => {
 	}
 };
 
-export default async (req: VercelRequest, res: VercelResponse) => {
+export const GET: RequestHandler = async (req) => {
 	try {
 		const userId = await getUserByName('Daniel Wei');
 
 		if (userId) {
 			await sendMessageToUser(userId, 'Alive and Healthy!');
-			res.status(200).send('Health check message sent.');
+			// return a 200 response
+			return new Response('Health check message sent.');
 		} else {
-			res.status(404).send('User not found.');
+			// return a 404 response
+			return new Response('User not found', { status: 404 });
 		}
 	} catch (error) {
 		console.error('Error sending health check message:', error);
-		res.status(500).send('Error sending health check message');
+		// return a 500 response
+		return new Response('Error sending health check message', { status: 500 });
 	}
 };
