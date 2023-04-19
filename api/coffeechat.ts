@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { type VercelRequest, type VercelResponse } from '@vercel/node';
 import { WebClient } from '@slack/web-api';
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
