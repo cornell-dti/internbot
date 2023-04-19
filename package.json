@@ -28,6 +28,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@slack/web-api": "^6.8.1",
 		"vercel": "^28.19.0"
 	}
 }

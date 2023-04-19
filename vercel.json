@@ -1,0 +1,8 @@
+{
+	"crons": [
+		{
+			"path": "/api/coffeechat",
+			"schedule": "0 0 * * 1"
+		}
+	]
+}
