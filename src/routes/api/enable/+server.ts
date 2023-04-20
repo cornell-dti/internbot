@@ -8,7 +8,7 @@ export const POST: RequestHandler = async (req) => {
 	try {
 		await redis.set('bot_enabled', 'true');
 
-		return new Response('Bot enabled.');
+		return new Response('Bot enabled.', { status: 200 });
 	} catch (error) {
 		console.error('Error enabling the bot:', error);
 		return new Response('Error enabling the bot.', { status: 500 });
