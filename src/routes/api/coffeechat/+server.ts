@@ -1,15 +1,17 @@
 import { WebClient } from '@slack/web-api';
 import type { RequestHandler } from '@sveltejs/kit';
-import Redis from 'ioredis';
+import { Redis } from '@upstash/redis';
 
-const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
-const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN!;
+const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
+const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_UR!;
 
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
-const redisClient = new Redis(
-	`redis://default:${UPSTASH_REDIS_REST_TOKEN}@us1-tender-mastodon-38225.upstash.io:38225`
-);
+const redis = new Redis({
+	url: UPSTASH_REDIS_REST_URL,
+	token: UPSTASH_REDIS_REST_TOKEN
+});
 
 const shuffle = <T>(array: T[]): T[] => {
 	let currentIndex = array.length,
@@ -28,7 +30,7 @@ const shuffle = <T>(array: T[]): T[] => {
 export const POST: RequestHandler = async (req) => {
 	try {
 		// Step 0: Check that the global enabled flag is true
-		const isEnabled = await redisClient.get('enabled');
+		const isEnabled = await redis.get('bot_enabled');
 		if (isEnabled !== 'true') {
 			return new Response('Coffee Chats are not enabled', {
 				status: 403,
@@ -40,20 +42,20 @@ export const POST: RequestHandler = async (req) => {
 		const { members } = await slackClient.conversations.members({ channel: 'CDXU35346' });
 		await Promise.all(
 			(members ?? []).map(async (member) => {
-				const isInChannel = await redisClient.get(`user:${member}:in_channel`);
+				const isInChannel = await redis.get(`user:${member}:in_channel`);
 				if (isInChannel === null) {
-					await redisClient.set(`user:${member}:in_channel`, 'true');
-					await redisClient.set(`user:${member}:included`, 'true');
+					await redis.set(`user:${member}:in_channel`, 'true');
+					await redis.set(`user:${member}:included`, 'true');
 				} else if (isInChannel === 'false') {
-					await redisClient.set(`user:${member}:in_channel`, 'true');
-					await redisClient.set(`user:${member}:included`, 'true');
+					await redis.set(`user:${member}:in_channel`, 'true');
+					await redis.set(`user:${member}:included`, 'true');
 				}
 			})
 		);
 
 		// 2. Perform random pairings
-		const users = (await redisClient.keys('user:*:included'))
-			.filter(async (key) => (await redisClient.get(key)) === 'true')
+		const users = (await redis.keys('user:*:included'))
+			.filter(async (key) => (await redis.get(key)) === 'true')
 			.map((key) => key.split(':')[1]);
 
 		const userPairs: [string, string][] = [];
@@ -62,10 +64,10 @@ export const POST: RequestHandler = async (req) => {
 			const firstUser = shuffledUsers.pop()!;
 			const secondUser = shuffledUsers.pop()!;
 
-			const pairingHistory = await redisClient.smembers(`history:${firstUser}:${secondUser}`);
+			const pairingHistory = await redis.smembers(`history:${firstUser}:${secondUser}`);
 			if (pairingHistory.length === 0) {
 				userPairs.push([firstUser, secondUser]);
-				await redisClient.sadd(`history:${firstUser}:${secondUser}`, 'paired');
+				await redis.sadd(`history:${firstUser}:${secondUser}`, 'paired');
 			} else {
 				users.push(firstUser, secondUser);
 			}

@@ -1,15 +1,18 @@
-import Redis from 'ioredis';
+import { Redis } from '@upstash/redis';
 import type { RequestHandler } from '@sveltejs/kit';
 
-const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN!;
+const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
+const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_UR!;
 
-let client = new Redis(
-	`redis://default:${UPSTASH_REDIS_REST_TOKEN}@us1-tender-mastodon-38225.upstash.io:38225`
-);
+const redis = new Redis({
+	url: UPSTASH_REDIS_REST_URL,
+	token: UPSTASH_REDIS_REST_TOKEN
+});
 
 export const POST: RequestHandler = async (req) => {
 	try {
-		await client.set('bot_enabled', 'false');
+		await redis.set('bot_enabled', 'false');
 
 		return new Response('Bot disabled.');
 	} catch (error) {
