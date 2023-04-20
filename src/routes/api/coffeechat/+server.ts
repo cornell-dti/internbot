@@ -9,8 +9,8 @@ const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_UR!;
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
 const redis = new Redis({
-	url: UPSTASH_REDIS_REST_URL,
-	token: UPSTASH_REDIS_REST_TOKEN
+	url: UPSTASH_REDIS_REST_URL + '',
+	token: UPSTASH_REDIS_REST_TOKEN + ''
 });
 
 const shuffle = <T>(array: T[]): T[] => {
@@ -27,7 +27,7 @@ const shuffle = <T>(array: T[]): T[] => {
 	return array;
 };
 
-export const POST: RequestHandler = async (req) => {
+export const GET: RequestHandler = async (req) => {
 	try {
 		// Step 0: Check that the global enabled flag is true
 		const isEnabled = await redis.get('bot_enabled');
