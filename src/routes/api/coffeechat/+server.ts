@@ -27,6 +27,15 @@ const shuffle = <T>(array: T[]): T[] => {
 
 export const POST: RequestHandler = async (req) => {
 	try {
+		// Step 0: Check that the global enabled flag is true
+		const isEnabled = await redisClient.get('enabled');
+		if (isEnabled !== 'true') {
+			return new Response('Coffee Chats are not enabled', {
+				status: 403,
+				headers: { 'Content-Type': 'text/plain' }
+			});
+		}
+
 		// 1. Perform updates to the database
 		const { members } = await slackClient.conversations.members({ channel: 'CDXU35346' });
 		await Promise.all(
