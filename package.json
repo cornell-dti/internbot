@@ -17,6 +17,7 @@
 		"@sveltejs/adapter-auto": "^1.0.0-next.90",
 		"@sveltejs/kit": "^1.0.0-next.587",
 		"@types/cookie": "^0.5.1",
+		"@types/node": "^18.15.12",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.8.1",
 		"svelte": "^3.54.0",
@@ -30,7 +31,9 @@
 	"dependencies": {
 		"@slack/web-api": "^6.8.1",
 		"@sveltejs/adapter-vercel": "^2.4.2",
+		"@upstash/redis": "^1.20.4",
 		"dotenv": "^16.0.3",
+		"ioredis": "^5.3.2",
 		"vercel": "^28.19.0"
 	}
 }

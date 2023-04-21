@@ -1,47 +1,108 @@
-import type { RequestHandler } from '@sveltejs/kit';
 import { WebClient } from '@slack/web-api';
+import type { RequestHandler } from '@sveltejs/kit';
+import Redis from 'ioredis';
 
-const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
-const webClient = new WebClient(SLACK_BOT_TOKEN);
+const REDIS_CONNECTION = process.env.REDIS_CONNECTION!;
+const redis = REDIS_CONNECTION ? new Redis(REDIS_CONNECTION) : new Redis();
 
-const getAllUsers = async (): Promise<string[]> => {
-	const result = await webClient.users.list();
-	const users = (result.members ?? [])
-		.filter((member) => !member.is_bot && !member.deleted)
-		.map((member) => member.id);
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN!;
+const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
-	return users.map((user) => user ?? '');
+const shuffle = <T>(array: T[]): T[] => {
+	let currentIndex = array.length,
+		temporaryValue,
+		randomIndex;
+	while (0 !== currentIndex) {
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex -= 1;
+		temporaryValue = array[currentIndex];
+		array[currentIndex] = array[randomIndex];
+		array[randomIndex] = temporaryValue;
+	}
+	return array;
 };
 
-const createGroupDMs = async (userPairs: [string, string][]) => {
-	for (const pair of userPairs) {
-		const result = await webClient.conversations.open({
-			users: pair.join(',')
-		});
-
-		if (result && result.channel && result.channel.id) {
-			await webClient.chat.postMessage({
-				channel: result.channel.id,
-				text: 'HI!'
+export const GET: RequestHandler = async (req) => {
+	try {
+		// Step 0: Check that the global enabled flag is true
+		const isEnabled = await redis.get('bot_enabled');
+		if (isEnabled !== 'true') {
+			return new Response('Coffee Chats are not enabled', {
+				status: 403,
+				headers: { 'Content-Type': 'text/plain' }
 			});
 		}
-	}
-};
 
-export const POST: RequestHandler = async (req) => {
-	try {
-		const users = await getAllUsers();
+		// 1. Perform updates to the database
+		const { members } = await slackClient.conversations.members({ channel: 'CDXU35346' });
+		await Promise.all(
+			(members ?? []).map(async (member) => {
+				const isInChannel = await redis.get(`user:${member}:in_channel`);
+				if (isInChannel === null) {
+					await redis.set(`user:${member}:in_channel`, 'true');
+					await redis.set(`user:${member}:included`, 'true');
+				} else if (isInChannel === 'false') {
+					await redis.set(`user:${member}:in_channel`, 'true');
+					await redis.set(`user:${member}:included`, 'true');
+				}
+			})
+		);
+
+		// 2. Perform random pairings
+		const users = (await redis.keys('user:*:included'))
+			.filter(async (key) => (await redis.get(key)) === 'true')
+			.map((key) => key.split(':')[1]);
+
 		const userPairs: [string, string][] = [];
+		while (users.length > 1) {
+			const shuffledUsers = shuffle<string>(users);
+			const firstUser = shuffledUsers.pop()!;
+			const secondUser = shuffledUsers.pop()!;
 
-		for (let i = 0; i < users.length - 1; i += 2) {
-			userPairs.push([users[i], users[i + 1]]);
+			const pairingHistory = await redis.smembers(`history:${firstUser}:${secondUser}`);
+			if (pairingHistory.length === 0) {
+				userPairs.push([firstUser, secondUser]);
+				await redis.sadd(`history:${firstUser}:${secondUser}`, 'paired');
+			} else {
+				users.push(firstUser, secondUser);
+			}
 		}
 
-		await createGroupDMs(userPairs);
+		// 3. Send a group DM to every pair of users
+		await Promise.all(
+			userPairs.map(async ([user1, user2]) => {
+				const { channel } = await slackClient.conversations.open({ users: `${user1},${user2}` });
+				if (!channel || !channel.id)
+					throw new Error('Could not open conversation with pair of users');
+				await slackClient.chat.postMessage({
+					channel: channel.id,
+					text: `
+					**HI! THIS IS A TEST MESSAGE!**
 
-		return new Response('DMs sent.');
+					**If something looks broken, DM <@U02KZ79CRD1>. We're working on an in-house replacement for Donut Bot! :robot_face:**
+
+					**Specific things to let us know about: if the @s below don't work, the #coffee-chats channel isn't linked, or if the Slackmojis don't properly emojify.**
+					
+					Hello <@${user1}> and <@${user2}>!
+					
+					I'm your friendly :robot_face:, here to help you get to know your teammates by pairing everyone on a weekly basis! 
+
+					Anyway, now that you're here, why don't you pick a time to meet for :coffee:, :tea:, :hamburger:, or :doughnut:s? Make sure you take quality, wholesome pictures to post in <#CDXU35346>!
+
+					_Not interested? You can opt out of future pairings by leaving the <#CDXU35346> channel._`
+				});
+			})
+		);
+
+		return new Response('Pairings generated and sent', {
+			status: 200,
+			headers: { 'Content-Type': 'text/plain' }
+		});
 	} catch (error) {
-		console.error('Error sending DMs:', error);
-		return new Response('Error sending DMs', { status: 500 });
+		console.error('Error generating and sending pairings:', error);
+		return new Response('Error generating and sending pairings', {
+			status: 500,
+			headers: { 'Content-Type': 'text/plain' }
+		});
 	}
 };

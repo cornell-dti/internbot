@@ -36,7 +36,7 @@ export const POST: RequestHandler = async (req) => {
 		if (userId) {
 			await sendMessageToUser(userId, 'Alive and Healthy!');
 			// return a 200 response
-			return new Response('Health check message sent.');
+			return new Response('Health check message sent.', { status: 200 });
 		} else {
 			// return a 404 response
 			return new Response('User not found', { status: 404 });

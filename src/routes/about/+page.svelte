@@ -4,13 +4,16 @@
 </svelte:head>
 
 <div class="text-column">
-	<h1>About</h1>
+	<h2><strong>About</strong></h2>
 
 	<p>
-		Implemented using SvelteKit, Vercel Serverless Functions, Vercel Cron Jobs, and the Slack API.
+		Implemented using SvelteKit, Vercel Serverless Functions, Vercel Cron Jobs, Upstash's managed
+		Redis database, and the Slack API.
 	</p>
 
-	<center><h2><strong>Contributors</strong></h2></center>
+	<p>
+		<strong>Contributors</strong>
+	</p>
 
 	<ul>
 		<li>Daniel Wei - DevLead SP23</li>

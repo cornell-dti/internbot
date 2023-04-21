@@ -11,7 +11,7 @@
 <section>
 	<h1>YASS 🤖💅</h1>
 
-	<h2><strong>Yet Another Simple Slackbot.</strong></h2>
+	<h2><strong>Yet Another Simple Slackbot</strong></h2>
 </section>
 
 <style>
