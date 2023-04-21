@@ -29,7 +29,7 @@ const sendMessageToUser = async (userId: string, message: string) => {
 	}
 };
 
-export const GET: RequestHandler = async (req) => {
+export const POST: RequestHandler = async (req) => {
 	try {
 		const userId = await getUserByName('Daniel Wei');
 
