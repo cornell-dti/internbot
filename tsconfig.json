@@ -10,7 +10,8 @@
 		"sourceMap": true,
 		"module": "esnext",
 		"strict": true,
-		"types": ["vitest/importMeta"]
+		"types": ["vitest/importMeta"],
+		"ignoreDeprecations": "5.0"
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
 	//

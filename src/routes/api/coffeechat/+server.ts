@@ -148,7 +148,7 @@ if (import.meta.vitest) {
 
 	it('gets NetID from SlackID', async () => {
 		expect(await getNetID('U02KZ79CRD1')).toBe('dlw266');
-	});
+	}, 30000);
 
 	it('s DB roster at the very least contains me', async () => {
 		expect(await getRosterFromDB()).toContain('dlw266');

@@ -1,38 +1,45 @@
-# create-svelte
+# YASS BOT
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+## Also known as Yet Another Simple Slackbot.
 
-## Creating a project
+YASS BOT is a simple Slackbot used for internal tooling purposes at [Cornell DTI](https://cornelldti.org/).
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Development
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+Interested in contributing? Clone/fork the repo, run `npm i` to install dependencies, and `npm run dev` to start the development server.
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+You'll also need some environment variables. You can find them in the Vercel project settings, or you can DM me on Slack.
 
-## Developing
+Once you're ready, just open a PR and I'll review it!
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+For a more low-commitment way to contribute, file an issue and I'll try to get to it as soon as I can.
 
-```bash
-npm run dev
+### Technologies
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+I aimed to make the bot leverage the latest (and hopefully greatest) technologies in web development. That means it's serverless, with a fully managed low-latency **Redis** database on Upstash, globally available **serverless functions** on Vercel's edge network, Vercel's **cron jobs** and **Vercel hosting**, a frontend built with the extremely trendy server-side-rendered **SvelteKit** JS framework, and continuous testing using **Vitest** and automated via **GitHub Actions**.
 
-## Building
+- [Vite](https://vitejs.dev/) for bundling and serving the app.
+- [Vitest](https://vitest.dev/) for inline testing for the serverless functions.
+- [SvelteKit](https://kit.svelte.dev/) for the frontend.
+- [Vercel](https://vercel.com/) for hosting, serverless function deployment, and cron jobs.
+- [Upstash](https://upstash.com/) for a fully managed Redis database.
+- [Github Actions](https://github.com/features/actions) for continuous testing.
 
-To create a production version of your app:
+## Roadmap
 
-```bash
-npm run build
-```
+- [x] Weekly coffee-chat pairings for everyone in the #coffee-chat channel that is also in this semester's roster.
+- [x] Web-based admin dashboard to manually update the semesterly roster, trigger a pairing, or turn on/off the bot.
+- [x] Ensures no pairs are ever repeated.
 
-You can preview the production build with `npm run preview`.
+- [ ] Password protection for the admin dashboard.
+- [ ] Birthdays!
+- [ ] A better admin dashboard UI.
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## License
+
+[MIT](LICENSE)
+
+## Contributors
+
+- Daniel Wei (DevLead SP23)
+- Michelle Li (DevLead SP23)
