@@ -8,6 +8,15 @@ const redis = REDIS_CONNECTION ? new Redis(REDIS_CONNECTION) : new Redis();
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN!;
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
+const generateMessage = (user1: string, user2: string) => `
+Hello <@${user1}> and <@${user2}>!
+
+I'm your friendly neighborhood :robot_face:, here to help you get to know your teammates by pairing everyone on a weekly basis! 
+
+Anyway, now that you're here, why don't you pick a time to meet for :coffee:, :tea:, :hamburger:, or :doughnut:s? Make sure you take quality, wholesome pictures to post in <#CDXU35346>!
+
+_Not interested? You can opt out of future pairings by leaving the <#CDXU35346> channel._`;
+
 const shuffle = <T>(array: T[]): T[] => {
 	let currentIndex = array.length,
 		temporaryValue,
@@ -76,20 +85,7 @@ export const GET: RequestHandler = async (req) => {
 					throw new Error('Could not open conversation with pair of users');
 				await slackClient.chat.postMessage({
 					channel: channel.id,
-					text: `
-					**HI! THIS IS A TEST MESSAGE!**
-
-					**If something looks broken, DM <@U02KZ79CRD1>. We're working on an in-house replacement for Donut Bot! :robot_face:**
-
-					**Specific things to let us know about: if the @s below don't work, the #coffee-chats channel isn't linked, or if the Slackmojis don't properly emojify.**
-					
-					Hello <@${user1}> and <@${user2}>!
-					
-					I'm your friendly :robot_face:, here to help you get to know your teammates by pairing everyone on a weekly basis! 
-
-					Anyway, now that you're here, why don't you pick a time to meet for :coffee:, :tea:, :hamburger:, or :doughnut:s? Make sure you take quality, wholesome pictures to post in <#CDXU35346>!
-
-					_Not interested? You can opt out of future pairings by leaving the <#CDXU35346> channel._`
+					text: generateMessage(user1, user2)
 				});
 			})
 		);
