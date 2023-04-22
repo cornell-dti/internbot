@@ -11,7 +11,7 @@
 		// reload page after 1s
 		setTimeout(() => {
 			location.reload();
-		}, 1000);
+		}, 333);
 	};
 
 	const coffeechatFormSubmit = async () => {

@@ -8,6 +8,10 @@ const redis = REDIS_CONNECTION ? new Redis(REDIS_CONNECTION) : new Redis();
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN!;
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
+// ===== Arbitrary Constants =====
+
+const CHANNEL_ID = 'CDXU35346';
+
 const generateMessage = (user1: string, user2: string) => `
 Hello <@${user1}> and <@${user2}>!
 
@@ -17,67 +21,60 @@ Anyway, now that you're here, why don't you pick a time to meet for :coffee:, :t
 
 _Not interested? You can opt out of future pairings by leaving the <#CDXU35346> channel._`;
 
-const shuffle = <T>(array: T[]): T[] => {
-	let currentIndex = array.length,
-		temporaryValue,
-		randomIndex;
-	while (0 !== currentIndex) {
-		randomIndex = Math.floor(Math.random() * currentIndex);
-		currentIndex -= 1;
-		temporaryValue = array[currentIndex];
-		array[currentIndex] = array[randomIndex];
-		array[randomIndex] = temporaryValue;
-	}
-	return array;
+// ===== Helper Functions =====
+
+const enabled = async () => (await redis.get('bot_enabled')) === 'true';
+
+const getAllUsersInChannel = async () =>
+	(await slackClient.conversations.members({ channel: CHANNEL_ID })).members ?? [];
+
+const addPairToDB = async (user1: string, user2: string) =>
+	await redis.sadd(`coffeechat:${user1}`, user2);
+
+const hasPairBeenPaired = async (user1: string, user2: string) =>
+	(await redis.sismember(`coffeechat:${user1}`, user2)) === 1;
+
+const getRandomPairFromArr = <T>(arr: T[]): [T, T] => {
+	do {
+		// generate two random indices, check if they're equal, and if not, shallow copy the pair, remove the pair from the array, and return the pair
+		const index1 = Math.floor(Math.random() * arr.length);
+		const index2 = Math.floor(Math.random() * arr.length);
+
+		if (index1 !== index2) {
+			const pair = [arr[index1], arr[index2]] as [T, T];
+
+			arr.splice(index1, 1);
+			arr.splice(index2, 1);
+
+			return pair;
+		}
+	} while (true);
 };
+
+// ===== Main Function =====
 
 export const GET: RequestHandler = async (req) => {
 	try {
-		// Step 0: Check that the global enabled flag is true
-		const isEnabled = await redis.get('bot_enabled');
-		if (isEnabled !== 'true') {
+		// Step 0: Check that the global enabled flag is true, and if not, return a 403
+		if (!(await enabled())) {
 			return new Response('Coffee Chats are not enabled', {
 				status: 403,
 				headers: { 'Content-Type': 'text/plain' }
 			});
 		}
 
-		// 1. Perform updates to the database
-		const { members } = await slackClient.conversations.members({ channel: 'CDXU35346' });
-		await Promise.all(
-			(members ?? []).map(async (member) => {
-				const isInChannel = await redis.get(`user:${member}:in_channel`);
-				if (isInChannel === null) {
-					await redis.set(`user:${member}:in_channel`, 'true');
-					await redis.set(`user:${member}:included`, 'true');
-				} else if (isInChannel === 'false') {
-					await redis.set(`user:${member}:in_channel`, 'true');
-					await redis.set(`user:${member}:included`, 'true');
-				}
-			})
-		);
-
-		// 2. Perform random pairings
-		const users = (await redis.keys('user:*:included'))
-			.filter(async (key) => (await redis.get(key)) === 'true')
-			.map((key) => key.split(':')[1]);
-
+		// Step 1: Populate userPairs with random pairs that haven't been paired before
+		const members = await getAllUsersInChannel();
 		const userPairs: [string, string][] = [];
-		while (users.length > 1) {
-			const shuffledUsers = shuffle<string>(users);
-			const firstUser = shuffledUsers.pop()!;
-			const secondUser = shuffledUsers.pop()!;
-
-			const pairingHistory = await redis.smembers(`history:${firstUser}:${secondUser}`);
-			if (pairingHistory.length === 0) {
-				userPairs.push([firstUser, secondUser]);
-				await redis.sadd(`history:${firstUser}:${secondUser}`, 'paired');
-			} else {
-				users.push(firstUser, secondUser);
+		while (members.length > 1) {
+			const [user1, user2] = getRandomPairFromArr(members);
+			if (!(await hasPairBeenPaired(user1, user2))) {
+				userPairs.push([user1, user2]);
+				await addPairToDB(user1, user2);
 			}
 		}
 
-		// 3. Send a group DM to every pair of users
+		// Step 2. Send a group DM to every pair of users
 		await Promise.all(
 			userPairs.map(async ([user1, user2]) => {
 				const { channel } = await slackClient.conversations.open({ users: `${user1},${user2}` });
