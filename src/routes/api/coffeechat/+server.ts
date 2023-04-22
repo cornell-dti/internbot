@@ -54,10 +54,8 @@ const getRosterFromDB = async (): Promise<NetID[]> =>
 	JSON.parse((await redis.get('roster')) ?? '[]') as NetID[];
 
 // take the intersection of the roster and the members in the channel and return all the slackIDs as an array
-const getMembers = async (): Promise<SlackID[]> =>
-	(await getAllUsersInChannel())
-		.filter(async (member) => (await getRosterFromDB()).includes(member.netID))
-		.map((member) => member.slackID);
+const getMembers = async (roster: NetID[], channelMembers: UserObj[]): Promise<SlackID[]> =>
+	channelMembers.filter((member) => roster.includes(member.netID)).map((member) => member.slackID);
 
 const addPairToDB = async (user1: SlackID, user2: SlackID) =>
 	await redis.sadd(`coffeechat:${user1}`, user2);
@@ -95,7 +93,7 @@ export const GET: RequestHandler = async (req) => {
 		}
 
 		// Step 1: Populate userPairs with random pairs that haven't been paired before
-		const members = await getMembers();
+		const members = await getMembers(await getRosterFromDB(), await getAllUsersInChannel());
 		const userPairs: [SlackID, SlackID][] = [];
 
 		while (members.length > 1) {
@@ -131,3 +129,35 @@ export const GET: RequestHandler = async (req) => {
 		});
 	}
 };
+
+// ===== Inline Tests with Vitest =====
+
+if (import.meta.vitest) {
+	const { it, expect } = import.meta.vitest;
+
+	const roster = ['abc', 'def', 'ghi'];
+	const channelMembers = [
+		{ slackID: '1', netID: 'abc' },
+		{ slackID: '2', netID: 'def' },
+		{ slackID: '3', netID: 'jkl' }
+	];
+
+	it('getMembers correctly', async () => {
+		expect(await getMembers(roster, channelMembers)).toEqual(['1', '2']);
+	});
+
+	it('gets NetID from SlackID', async () => {
+		expect(await getNetID('U02KZ79CRD1')).toBe('dlw266');
+	});
+
+	it('s DB roster at the very least contains me', async () => {
+		expect(await getRosterFromDB()).toContain('dlw266');
+	});
+
+	it('s coffee-chats channel list at the very least contains me', async () => {
+		const includesMe = (await getAllUsersInChannel()).find(
+			(member) => member.netID === 'dlw266' && member.slackID === 'U02KZ79CRD1'
+		);
+		expect(includesMe).toBeTruthy();
+	});
+}

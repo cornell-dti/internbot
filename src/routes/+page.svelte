@@ -7,7 +7,8 @@
 	// local state for the roster text
 	let rosterText = '';
 
-	const parseRosterText = (rosterText: string): string[] => rosterText.split('\n');
+	const parseRosterText = (rosterText: string): string[] =>
+		rosterText.split('\n').map((netid) => netid.trim());
 
 	// call the local /api/disable or /api/enable endpoint with POST
 	const statusFormSubmit = async () =>
