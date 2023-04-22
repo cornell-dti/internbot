@@ -23,18 +23,49 @@ _Not interested? You can opt out of future pairings by leaving the <#CDXU35346> 
 
 // ===== Helper Functions =====
 
-const enabled = async () => (await redis.get('bot_enabled')) === 'true';
+type SlackID = string;
+type NetID = string;
 
-const getAllUsersInChannel = async () =>
-	(await slackClient.conversations.members({ channel: CHANNEL_ID })).members ?? [];
+type UserObj = {
+	slackID: SlackID;
+	netID: NetID;
+};
 
-const addPairToDB = async (user1: string, user2: string) =>
+// get whether bot_enabled globally
+const enabled = async (): Promise<boolean> => (await redis.get('bot_enabled')) === 'true';
+
+// get NetID from SlackID
+const getNetID = async (slackID: SlackID): Promise<NetID> =>
+	(await slackClient.users.info({ user: slackID })).user?.profile?.email?.split('@')[0] ?? '';
+
+// get all the members in the channel and return them as an array of UserObjs
+const getAllUsersInChannel = async (): Promise<UserObj[]> =>
+	await Promise.all(
+		(
+			await slackClient.conversations.members({ channel: CHANNEL_ID })
+		).members?.map(async (id) => ({
+			slackID: id,
+			netID: await getNetID(id)
+		})) ?? []
+	);
+
+// get the roster from the database and parse it as an array of netIDs
+const getRosterFromDB = async (): Promise<NetID[]> =>
+	JSON.parse((await redis.get('roster')) ?? '[]') as NetID[];
+
+// take the intersection of the roster and the members in the channel and return all the slackIDs as an array
+const getMembers = async (): Promise<SlackID[]> =>
+	(await getAllUsersInChannel())
+		.filter(async (member) => (await getRosterFromDB()).includes(member.netID))
+		.map((member) => member.slackID);
+
+const addPairToDB = async (user1: SlackID, user2: SlackID) =>
 	await redis.sadd(`coffeechat:${user1}`, user2);
 
-const hasPairBeenPaired = async (user1: string, user2: string) =>
+const hasPairBeenPaired = async (user1: SlackID, user2: SlackID) =>
 	(await redis.sismember(`coffeechat:${user1}`, user2)) === 1;
 
-const getRandomPairFromArr = <T>(arr: T[]): [T, T] => {
+const popRandomPairFromArr = <T>(arr: T[]): [T, T] => {
 	do {
 		// generate two random indices, check if they're equal, and if not, shallow copy the pair, remove the pair from the array, and return the pair
 		const index1 = Math.floor(Math.random() * arr.length);
@@ -64,13 +95,14 @@ export const GET: RequestHandler = async (req) => {
 		}
 
 		// Step 1: Populate userPairs with random pairs that haven't been paired before
-		const members = await getAllUsersInChannel();
-		const userPairs: [string, string][] = [];
+		const members = await getMembers();
+		const userPairs: [SlackID, SlackID][] = [];
+
 		while (members.length > 1) {
-			const [user1, user2] = getRandomPairFromArr(members);
-			if (!(await hasPairBeenPaired(user1, user2))) {
-				userPairs.push([user1, user2]);
-				await addPairToDB(user1, user2);
+			const pair = popRandomPairFromArr(members);
+			if (!(await hasPairBeenPaired(pair[0], pair[1]))) {
+				userPairs.push(pair);
+				await addPairToDB(pair[0], pair[1]);
 			}
 		}
 
