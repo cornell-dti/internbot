@@ -17,7 +17,7 @@
 	const coffeechatFormSubmit = async () => {
 		// call the local /api/coffeechat endpoint with POST
 		await fetch(`/api/coffeechat`, {
-			method: 'POST'
+			method: 'GET'
 		});
 	};
 </script>
