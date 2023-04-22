@@ -23,3 +23,8 @@ jobs:
 
       - name: Run tests
         run: npm test
+        env:
+          SLACK_BOT_TOKEN: ${{secrets.SLACK_BOT_TOKEN}}
+          UPSTASH_REDIS_REST_URL: ${{secrets.UPSTASH_REDIS_REST_URL}
+          UPSTASH_REDIS_REST_TOKEN: ${{secrets.UPSTASH_REDIS_REST_TOKEN}
+          REDIS_CONNECTION: ${{secrets.REDIS_CONNECTION}
