@@ -12,9 +12,8 @@ You'll also need some environment variables. You can find them in the Vercel pro
 2. Middleware (serverless functions that automatically scale to demand!) are in `src/routes/api/[endpointName]/+server.ts` and are just regular POST/GET handlers. The big complex one is /coffeechat -- the others are mostly getters and setters for the Redis database :arrow_down: .
 3. I went with Redis because Slack has apparently some pretty strict timeOut boundaries and I didn't want to run over (you're supposed to return 200 OK first, and then do your side effects, or something. I'd rather not.). It's just a super-fast key-value store that runs out of pure RAM so we'll never have many performance issues. It helps handle the fact that it spikes once a week a bit better too :arrow_down: .
 4. The cron job config is in vercel.json in root. It just describes the path to the endpoint to hit, and the cron config for when to hit it. I set it to mondays at midnight currently.
-5. There are some arbitrary constants throughout the code at the moment. The message template is in the `src/routes/api/coffeechat/+server.ts` file, as is the Channel ID for #coffee-chats. The password for users to access the dashboard in the first place is in `src/components/PasswordGate.svelte`.
 
-On Github, just opening a PR should run npm test which uses Vitest under the hood.
+On Github, just opening a PR should run `npm test` which uses Vitest under the hood.
 
 Once you're ready, just open a PR and I'll review it!
 
