@@ -6,6 +6,7 @@
 	export let data: {
 		currentlyEnabled: string;
 		currentRoster: string[];
+		password: string;
 	};
 
 	// local state for whether the bot is enabled or not
@@ -70,7 +71,7 @@
 	<meta name="description" content="YASS home page" />
 </svelte:head>
 
-<PasswordGate />
+<PasswordGate pass={data.password} />
 
 <Message msg={message} />
 
