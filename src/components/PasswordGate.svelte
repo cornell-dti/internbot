@@ -42,6 +42,7 @@
 		height: 100%;
 		background-color: rgba(0, 0, 0, 0.5);
 		backdrop-filter: blur(15px);
+		-webkit-backdrop-filter: blur(15px);
 		display: flex;
 		justify-content: center;
 		align-items: center;
