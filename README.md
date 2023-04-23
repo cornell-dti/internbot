@@ -14,7 +14,7 @@ You'll also need some environment variables. You can find them in the Vercel pro
 4. The cron job config is in vercel.json in root. It just describes the path to the endpoint to hit, and the cron config for when to hit it. I set it to mondays at midnight currently.
 5. There are some arbitrary constants throughout the code at the moment. The message template is in the `src/routes/api/coffeechat/+server.ts` file, as is the Channel ID for #coffee-chats. The password for users to access the dashboard in the first place is in `src/components/PasswordGate.svelte`.
 
-You can just run npm i and then npm run dev to start it locally. On Github, just opening a PR should run npm test which uses Vitest under the hood. Full disclosure I only added testing because there were some bugs earlier !
+On Github, just opening a PR should run npm test which uses Vitest under the hood.
 
 Once you're ready, just open a PR and I'll review it!
 
@@ -49,4 +49,3 @@ To accomplish this, I aimed for serverless architecture, with a fully managed lo
 ## Contributors
 
 - Daniel Wei (DevLead SP23)
-- Michelle Li (DevLead SP23)
