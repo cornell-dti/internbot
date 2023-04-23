@@ -1,13 +1,12 @@
 <!-- PasswordGate.svelte -->
-<script>
-	import { onDestroy, onMount } from 'svelte';
+<script lang="ts">
+	export let pass: string;
 
-	const PASSWORD = 'iknowdawei';
 	let inputPassword = '';
 	let isUnlocked = false;
 
 	function checkPassword() {
-		if (inputPassword === PASSWORD) {
+		if (inputPassword === pass) {
 			isUnlocked = true;
 		} else {
 			alert('Incorrect password. Please try again.');

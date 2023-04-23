@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
 
 const REDIS_CONNECTION = process.env.REDIS_CONNECTION!;
+const PASSWORD = process.env.PASSWORD!;
 
 export async function load() {
 	const redis = REDIS_CONNECTION ? new Redis(REDIS_CONNECTION) : new Redis();
@@ -8,6 +9,7 @@ export async function load() {
 	const currentRoster = JSON.parse((await redis.get('roster')) ?? '[]') as string[];
 	return {
 		currentlyEnabled: currentlyEnabled,
-		currentRoster: currentRoster
+		currentRoster: currentRoster,
+		password: PASSWORD
 	};
 }

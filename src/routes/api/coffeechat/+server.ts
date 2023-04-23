@@ -3,14 +3,14 @@ import type { RequestHandler } from '@sveltejs/kit';
 import Redis from 'ioredis';
 
 const REDIS_CONNECTION = process.env.REDIS_CONNECTION!;
-const redis = REDIS_CONNECTION ? new Redis(REDIS_CONNECTION) : new Redis();
+const redis = new Redis(REDIS_CONNECTION);
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN!;
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
-// ===== Arbitrary Constants =====
+const CHANNEL_ID = process.env.COFFEE_CHAT_CHANNEL_ID!;
 
-const CHANNEL_ID = 'CDXU35346';
+// ===== Helper Functions =====
 
 const generateMessage = (user1: string, user2: string) => `
 Hello <@${user1}> and <@${user2}>!
@@ -20,8 +20,6 @@ I'm your friendly neighborhood :robot_face:, here to help you get to know your t
 Anyway, now that you're here, why don't you pick a time to meet for :coffee:, :tea:, :hamburger:, or :doughnut:s? Make sure you take quality, wholesome pictures to post in <#CDXU35346>!
 
 _Not interested? You can opt out of future pairings by leaving the <#CDXU35346> channel._`;
-
-// ===== Helper Functions =====
 
 type SlackID = string;
 type NetID = string;
