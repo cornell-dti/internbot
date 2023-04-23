@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let data;
 
-	// enablement is a boolean
+	// enablement is a derived boolean
 	$: enablement = data.currentlyEnabled === 'true' ? true : false;
 
 	// local state for the roster text

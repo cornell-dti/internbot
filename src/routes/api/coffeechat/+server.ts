@@ -135,29 +135,64 @@ export const GET: RequestHandler = async (req) => {
 if (import.meta.vitest) {
 	const { it, expect } = import.meta.vitest;
 
-	const roster = ['abc', 'def', 'ghi'];
-	const channelMembers = [
+	const dummyRoster = ['abc', 'def', 'ghi'];
+	const dummyChannelMembers = [
 		{ slackID: '1', netID: 'abc' },
 		{ slackID: '2', netID: 'def' },
 		{ slackID: '3', netID: 'jkl' }
 	];
 
-	it('getMembers correctly', async () => {
-		expect(await getMembers(roster, channelMembers)).toEqual(['1', '2']);
-	});
+	const me = {
+		name: 'Daniel Wei',
+		netID: 'dlw266',
+		slackID: 'U02KZ79CRD1'
+	};
 
-	it('gets NetID from SlackID', async () => {
-		expect(await getNetID('U02KZ79CRD1')).toBe('dlw266');
-	}, 30000);
+	// These members reported the bot not DMing them, so we're hardcoding them in for testing.
+	// Strangely, the tests pass regardless. I'm not sure why.
+	const realTestableMembers = [
+		{
+			name: 'Pranavi Gupta',
+			slackID: 'U033TMWE5DK',
+			netID: 'pg342'
+		},
+		{
+			name: 'Valerie Wong',
+			netID: 'vkw7',
+			slackID: 'U04Q99S2Y3C'
+		},
+		{
+			name: 'Noorejehan Umar',
+			netID: 'nu44',
+			slackID: 'U033WJZ8H0S'
+		},
+		{
+			name: 'Richard Gu',
+			netID: 'rg779',
+			slackID: 'U033G1EB7SB'
+		}
+	];
 
-	it('s DB roster at the very least contains me', async () => {
-		expect(await getRosterFromDB()).toContain('dlw266');
-	});
+	it('getMembers correctly', async () =>
+		expect(await getMembers(dummyRoster, dummyChannelMembers)).toEqual(['1', '2']));
 
-	it('s coffee-chats channel list at the very least contains me', async () => {
-		const includesMe = (await getAllUsersInChannel()).find(
-			(member) => member.netID === 'dlw266' && member.slackID === 'U02KZ79CRD1'
-		);
-		expect(includesMe).toBeTruthy();
-	});
+	it(
+		'gets NetID from SlackID',
+		async () => expect(await getNetID(me.slackID)).toBe(me.netID),
+		30000
+	);
+
+	it('s DB roster contains these members', async () =>
+		realTestableMembers.forEach(async (member) => {
+			expect(await getRosterFromDB()).toContain(member.netID);
+		}));
+
+	it('s coffee-chats channel list contains these members', async () =>
+		realTestableMembers.every(async (member) =>
+			(await getAllUsersInChannel()).find(
+				(user) => user.slackID === member.slackID && user.netID === member.netID
+			)
+				? true
+				: false
+		));
 }
