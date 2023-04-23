@@ -1,8 +1,6 @@
-# YASS BOT
+# Intern Bot
 
-## Also known as Yet Another Simple Slackbot.
-
-YASS BOT is a simple Slackbot used for internal tooling purposes at [Cornell DTI](https://cornelldti.org/).
+InternalBot, or InternBot for short, is a simple Slackbot used for internal tooling purposes at [Cornell DTI](https://cornelldti.org/). It helps foster community culture within our team, and if you want to use it to foster team spirit for your own team as well, feel free to fork it!
 
 ## Development
 
@@ -10,13 +8,23 @@ Interested in contributing? Clone/fork the repo, run `npm i` to install dependen
 
 You'll also need some environment variables. You can find them in the Vercel project settings, or you can DM me on Slack.
 
+1. The frontend is in `src/routes/+page.svelte` . Svelte is quite simple: Typescript in `<script></script>`, css in `<style></style>` and `html` everywhere else. The fetch requests within will fetch from the middleware. As the dashboard increases in complexity we can refactor some components out.
+2. Middleware (serverless functions that automatically scale to demand!) are in `src/routes/api/[endpointName]/+server.ts` and are just regular POST/GET handlers. The big complex one is /coffeechat -- the others are mostly getters and setters for the Redis database :arrow_down: .
+3. I went with Redis because Slack has apparently some pretty strict timeOut boundaries and I didn't want to run over (you're supposed to return 200 OK first, and then do your side effects, or something. I'd rather not.). It's just a super-fast key-value store that runs out of pure RAM so we'll never have many performance issues. It helps handle the fact that it spikes once a week a bit better too.
+4. The cron job config is in vercel.json in root. It just describes the path to the endpoint to hit, and the cron config for when to hit it. I set it to mondays at midnight currently.
+5. There are some arbitrary constants throughout the code at the moment. The message template is in the `src/routes/api/coffeechat/+server.ts` file, as is the Channel ID for #coffee-chats. The password for users to access the dashboard in the first place is in `src/components/PasswordGate.svelte`.
+
+You can just run npm i and then npm run dev to start it locally. On Github, just opening a PR should run npm test which uses Vitest under the hood. Full disclosure I only added testing because there were some bugs earlier !
+
 Once you're ready, just open a PR and I'll review it!
 
 For a more low-commitment way to contribute, file an issue and I'll try to get to it as soon as I can.
 
 ### Technologies
 
-I aimed to make the bot leverage the latest (and hopefully greatest) technologies in web development. That means it's serverless, with a fully managed low-latency **Redis** database on Upstash, globally available **serverless functions** on Vercel's edge network, Vercel's **cron jobs** and **Vercel hosting**, a frontend built with the extremely trendy server-side-rendered **SvelteKit** JS framework, and continuous testing using **Vitest** and automated via **GitHub Actions**.
+I aimed to make the bot leverage the latest (and hopefully greatest) technologies in web development. The goal is performance and ease of maintainability.
+
+To accomplish this, I aimed for serverless architecture, with a fully managed low-latency **Redis** database on Upstash, globally available **serverless functions** on Vercel's edge network, Vercel's **cron jobs** and **Vercel hosting**, a frontend built with the extremely trendy server-side-rendered **SvelteKit** JS framework, and continuous testing using **Vitest** and automated via **GitHub Actions**.
 
 - [Vite](https://vitejs.dev/) for bundling and serving the app.
 - [Vitest](https://vitest.dev/) for inline testing for the serverless functions.
@@ -30,10 +38,9 @@ I aimed to make the bot leverage the latest (and hopefully greatest) technologie
 - [x] Weekly coffee-chat pairings for everyone in the #coffee-chat channel that is also in this semester's roster.
 - [x] Web-based admin dashboard to manually update the semesterly roster, trigger a pairing, or turn on/off the bot.
 - [x] Ensures no pairs are ever repeated.
-
-- [ ] Password protection for the admin dashboard.
+- [x] Password protection for the admin dashboard.
 - [ ] Birthdays!
-- [ ] A better admin dashboard UI.
+- [ ] A better admin dashboard UI: modifying and storing constants such as the message template, password, and coffee-chats channel ID.
 
 ## License
 
