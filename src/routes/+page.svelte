@@ -1,38 +1,68 @@
 <script lang="ts">
-	export let data;
+	import PasswordGate from '../components/PasswordGate.svelte';
+	import logo from '$lib/images/internbot-logo.png';
+	import Message from '../components/Message.svelte';
 
-	// enablement is a boolean
-	$: enablement = data.currentlyEnabled === 'true' ? true : false;
+	export let data: {
+		currentlyEnabled: string;
+		currentRoster: string[];
+	};
 
-	// local state for the roster text
-	let rosterText = '';
+	// local state for whether the bot is enabled or not
+	let enablement = data.currentlyEnabled === 'true' ? true : false;
 
+	// local state for the roster text -- reduce input array into new-line separated string
+	let rosterText = data.currentRoster.reduce(
+		(acc, netid) => (acc === '' ? netid : `${acc}\n${netid}`), // if acc is empty, just return netid, otherwise return acc + netid
+		'' // initial value of acc
+	);
+
+	// message dispalyed
+	let message = '';
+
+	// parse the roster text into an array of netids
 	const parseRosterText = (rosterText: string): string[] =>
-		rosterText.split('\n').map((netid) => netid.trim());
+		rosterText.split('\n').map((netid) => netid.trim().toLowerCase());
+
+	// check that the roster text is valid: composed of only newlines and strings containing only letters, numbers, and leading/trailing whitespace
+	const rosterTextIsValid = (rosterText: string): boolean =>
+		rosterText.split('\n').every((netid) => /^[a-zA-Z0-9\s]*$/.test(netid));
 
 	// call the local /api/disable or /api/enable endpoint with POST
 	const statusFormSubmit = async () =>
 		fetch(`/api/${enablement ? 'disable' : 'enable'}`, {
 			method: 'POST'
-		}).then(() => window.location.reload());
+		}).then(() => {
+			enablement = !enablement;
+			message = `Internbot is now ${enablement ? 'enabled' : 'disabled'}`;
+		});
 
 	// call the local /api/coffeechat endpoint with POST
 	const coffeechatFormSubmit = async () =>
-		await fetch(`/api/coffeechat`, {
+		fetch(`/api/coffeechat`, {
 			method: 'GET'
+		}).then(() => {
+			message = 'Coffee chats sent!';
 		});
 
 	// POST to /api/storeroster where the JSON body is the roster
-	const rosterFormSubmit = async () =>
-		await fetch(`/api/storeroster`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				roster: parseRosterText(rosterText)
-			})
-		});
+	const rosterFormSubmit = async () => {
+		if (rosterTextIsValid(rosterText)) {
+			fetch(`/api/storeroster`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					roster: parseRosterText(rosterText)
+				})
+			}).then(() => {
+				message = 'Roster updated!';
+			});
+		} else {
+			message = 'Invalid roster text!';
+		}
+	};
 </script>
 
 <svelte:head>
@@ -40,25 +70,26 @@
 	<meta name="description" content="YASS home page" />
 </svelte:head>
 
+<PasswordGate />
+
+<Message msg={message} />
+
 <section>
-	<h1>YASS 🤖💅</h1>
-	<br />
+	<img src={logo} alt="Internbot Logo" width={300} />
 	<br />
 
-	<h2>Actions</h2>
 	<div class="row">
-		<button on:click={statusFormSubmit}>Toggle {enablement ? 'Off' : 'On'}</button>
+		<button on:click={statusFormSubmit}>Turn {enablement ? 'Off' : 'On'}</button>
 		<button on:click={coffeechatFormSubmit}>Trigger Coffee Chats Manually</button>
 	</div>
-	<br />
 
 	<form on:submit|preventDefault={rosterFormSubmit}>
 		<h2>Update Roster</h2>
 		<label for="roster">
-			Enter this year's roster with each NetID on a new line and nothing else!
+			Enter each NetID on its own line, and nothing else. <br />
 		</label>
 		<textarea rows={10} cols={10} name="roster" bind:value={rosterText} />
-		<button type="submit">Update Roster</button>
+		<button class="roster" type="submit">Update Roster</button>
 	</form>
 </section>
 
@@ -66,16 +97,10 @@
 	section {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
+		justify-content: space-around;
+		align-items: left;
+		padding: 1rem;
 		width: 100%;
-		text-align: center;
-		font-size: 2rem;
-		margin: 0;
 	}
 
 	div.row {
@@ -104,6 +129,14 @@
 	button:hover {
 		background-color: var(--var-color-red);
 		color: var(--var-color-white);
+	}
+
+	textarea {
+		width: clamp(25rem, 100%, 33rem);
+	}
+
+	button.roster {
+		width: fit-content;
 	}
 
 	form {
