@@ -38,10 +38,12 @@ To accomplish this, I aimed for serverless architecture, with a fully managed lo
 - [x] Web-based admin dashboard to manually update the semesterly roster, trigger a pairing, or turn on/off the bot.
 - [x] Ensures no pairs are ever repeated.
 - [x] Password protection for the admin dashboard.
+- [ ] Better testing (see Issue #8)
 - [ ] Authentication for DTI members in order to shorten and view shortened links -- rather than password protection.
 - [ ] Password gate should redirect -- not hide.
+- [ ] Rate limiting on the API (see PR #7)
 - [ ] Birthdays!
-- [ ] A better admin dashboard UI: modifying and storing constants such as the message template, password, and coffee-chats channel ID.
+- [ ] A better admin dashboard UI: modifying and storing constants such as the message template, and coffee-chats channel ID, as well as more intuitive roster management.
 
 ## License
 
