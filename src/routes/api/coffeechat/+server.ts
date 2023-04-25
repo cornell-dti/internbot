@@ -1,9 +1,11 @@
 import { WebClient } from '@slack/web-api';
 import type { RequestHandler } from '@sveltejs/kit';
 import Redis from 'ioredis';
+import { RateLimiter } from '$lib/util/rateLimiter';
 
 const REDIS_CONNECTION = process.env.REDIS_CONNECTION!;
 const redis = new Redis(REDIS_CONNECTION);
+const rateLimiter = new RateLimiter(redis, 12000, 1); // 12 seconds window and 1 request allowed within the window
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN!;
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
@@ -81,6 +83,17 @@ const popRandomPairFromArr = <T>(arr: T[]): [T, T] => {
 // ===== Main Function =====
 
 export const GET: RequestHandler = async (req) => {
+	// Throttle based on client IP
+	const clientIp = req.request.headers.get('x-forwarded-for') || 'fallback-placeholder-ip'; // Vercel should set this header (https://vercel.com/docs/concepts/edge-network/headers#x-vercel-ip-country)
+
+	const isAllowed = await rateLimiter.isAllowed(clientIp);
+	if (!isAllowed) {
+		return new Response('Too many requests', {
+			status: 429,
+			headers: { 'Content-Type': 'text/plain' }
+		});
+	}
+
 	try {
 		// Step 0: Check that the global enabled flag is true, and if not, return a 403
 		if (!(await enabled())) {

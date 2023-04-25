@@ -9,6 +9,9 @@
 		password: string;
 	};
 
+	// local state to track whether we've triggered the bot once
+	let triggered = false;
+
 	// local state for whether the bot is enabled or not
 	let enablement = data.currentlyEnabled === 'true' ? true : false;
 
@@ -39,12 +42,14 @@
 		});
 
 	// call the local /api/coffeechat endpoint with POST
-	const coffeechatFormSubmit = async () =>
+	const coffeechatFormSubmit = async () => {
+		triggered = true;
 		fetch(`/api/coffeechat`, {
 			method: 'GET'
 		}).then(() => {
 			message = 'Coffee chats sent!';
 		});
+	};
 
 	// POST to /api/storeroster where the JSON body is the roster
 	const rosterFormSubmit = async () => {
@@ -81,16 +86,18 @@
 
 	<div class="row">
 		<button on:click={statusFormSubmit}>Turn {enablement ? 'Off' : 'On'}</button>
-		<button on:click={coffeechatFormSubmit}>Trigger Coffee Chats Manually</button>
+		<button on:click|once|preventDefault={coffeechatFormSubmit}
+			>Trigger Coffee Chats Manually</button
+		>
 	</div>
 
 	<form on:submit|preventDefault={rosterFormSubmit}>
-		<h2>Update Roster</h2>
+		<h2>Roster</h2>
 		<label for="roster">
-			Enter each NetID on its own line, and nothing else. <br />
+			Keep each NetID on its own line, and input nothing else. <br />
 		</label>
 		<textarea rows={10} cols={10} name="roster" bind:value={rosterText} />
-		<button class="roster" type="submit">Update Roster</button>
+		<button class="roster" type="submit">Modify Roster</button>
 	</form>
 </section>
 
