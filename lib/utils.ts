@@ -1,8 +1,10 @@
-import ms from 'ms'
+export const fLetIn = <T, U>(x: T, f: (x: T) => U): U => {
+    return f(x);
+};
 
-export const timeAgo = (timestamp: Date, timeOnly?: boolean): string => {
-  if (!timestamp) return 'never'
-  return `${ms(Date.now() - new Date(timestamp).getTime())}${
-    timeOnly ? '' : ' ago'
-  }`
-}
+export const fLetDefIn = <T, U>(x: T | null | undefined, f: (x: T) => U): U =>
+    x === null || x === undefined
+        ? (() => {
+              throw new Error("Value must not be null or undefined");
+          })()
+        : f(x);
