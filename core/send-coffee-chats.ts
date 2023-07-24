@@ -1,12 +1,70 @@
-import { WebClient } from "@slack/web-api";
+import { WebClient, ConversationsMembersResponse } from "@slack/web-api";
 import prisma from "../lib/prisma";
+import { oDefIn } from "@/lib/utils";
 
-const slackToken = process.env.SLACK_BOT_TOKEN;
+const slackToken = oDefIn(process.env.SLACK_BOT_TOKEN);
 const slackClient = new WebClient(slackToken);
+const coffeeChatChannelId = oDefIn(process.env.COFFEE_CHAT_CHANNEL_ID);
 
 /**
- * Message to send to the users.
+ * This function fetches all the users in a given Slack channel.
  */
+const fetchChannelMembers = async (channelId: string) => {
+    const response = (await slackClient.conversations.members({
+        channel: channelId,
+    })) as ConversationsMembersResponse;
+    return response.members as string[];
+};
+
+/**
+ * This function fetches all active users in the current and last semester.
+ * It also includes the semester data for each user.
+ */
+const fetchActiveUsers = async () => {
+    const semesters = await prisma.semester.findMany({
+        orderBy: { endDate: "desc" },
+        take: 2,
+        include: {
+            semesterToUsers: {
+                where: { active: true },
+                include: { user: true },
+            },
+        },
+    });
+
+    const activeUsers = semesters.flatMap((s) =>
+        s.semesterToUsers.map((stu) => ({ ...stu.user, semester: s }))
+    );
+    return activeUsers;
+};
+
+/**
+ * This function checks whether two users have been paired in the past two semesters.
+ */
+const haveBeenPaired = async (user1Id: string, user2Id: string) => {
+    const pastPairings = await prisma.pair.findMany({
+        where: {
+            OR: [
+                { user1Id, user2Id },
+                { user1Id: user2Id, user2Id: user1Id },
+            ],
+        },
+        orderBy: { id: "desc" },
+        take: 2,
+    });
+
+    return pastPairings.length > 0;
+};
+
+/**
+ * This function sends a DM to the users with the coffee chat message.
+ */
+const sendDM = async (user1: string, user2: string) => {
+    const message = generateMessage(user1, user2);
+    await slackClient.chat.postMessage({ channel: user1, text: message });
+    await slackClient.chat.postMessage({ channel: user2, text: message });
+};
+
 const generateMessage = (user1: string, user2: string) => `
 Hello <@${user1}> and <@${user2}>!
 
@@ -14,138 +72,53 @@ I'm your friendly neighborhood :robot_face:, here to help you get to know your t
 
 Anyway, now that you're here, why don't you pick a time to meet for :coffee:, :tea:, :hamburger:, or :doughnut:s? Make sure you take quality, wholesome pictures to post in <#CDXU35346>!
 
-_Not interested? You can opt out of future pairings by leaving the <#CDXU35346> channel._`;
+_Not interested? You can opt out of future pairings by leaving the <#${coffeeChatChannelId}> channel._`;
 
 /**
- * Function to fetch all active users in the current semester.
- */
-const fetchActiveUsers = async (semesterId: number) => {
-    return prisma.semesterToUser.findMany({
-        where: {
-            semesterId: semesterId,
-            active: true,
-        },
-    });
-};
-
-/**
- * Function to check if two users have been paired in last two semesters.
- */
-const checkIfPaired = async (
-    user1Id: string,
-    user2Id: string,
-    semesterId: number
-) => {
-    const previousTwoSemesters = await prisma.semester.findMany({
-        where: {
-            id: {
-                lt: semesterId,
-            },
-        },
-        orderBy: {
-            id: "desc",
-        },
-        take: 2,
-    });
-
-    if (previousTwoSemesters.length === 0) {
-        return false;
-    }
-
-    const pairs = await prisma.pair.findMany({
-        where: {
-            OR: [
-                {
-                    user1Id: user1Id,
-                    user2Id: user2Id,
-                },
-                {
-                    user1Id: user2Id,
-                    user2Id: user1Id,
-                },
-            ],
-            semesterId: {
-                in: previousTwoSemesters.map((semester) => semester.id),
-            },
-        },
-    });
-
-    return pairs.length > 0;
-};
-
-/**
- * Main function to pair users and send them a message.
+ * This function does the main work of pairing up the users for coffee chats.
  */
 const sendCoffeeChats = async () => {
-    // Fetch current semester based on current date.
-    const currentSemester = await prisma.semester.findFirst({
-        where: {
-            startDate: {
-                lte: new Date(),
-            },
-            endDate: {
-                gte: new Date(),
-            },
-        },
-    });
+    const server = await prisma.server.findFirst({ where: { enabled: true } });
 
-    if (!currentSemester) {
-        console.error("No current semester found.");
+    if (!server) {
+        console.log("Bot is disabled.");
         return;
     }
 
-    // Fetch all active users.
-    const activeUsers = await fetchActiveUsers(currentSemester.id);
+    const channelMembers = await fetchChannelMembers(coffeeChatChannelId);
+    const activeUsers = await fetchActiveUsers();
 
-    // Shuffle active users to ensure randomness.
-    const shuffledUsers = activeUsers.sort(() => Math.random() - 0.5);
+    const eligibleUsers = activeUsers.filter((user) =>
+        channelMembers.includes(user.id)
+    );
 
-    // Iterate over the active users and pair them up.
-    for (let i = 0; i < shuffledUsers.length; i += 2) {
-        const user1 = shuffledUsers[i];
-        const user2 = shuffledUsers[i + 1];
+    while (eligibleUsers.length > 1) {
+        let user1 = oDefIn(eligibleUsers.pop());
+        let user2Index = 0;
 
-        // If there's an odd number of users, the last one won't have a pair.
-        if (!user2) {
-            console.log(`User ${user1.userId} did not get a pair this time.`);
+        // Find a user who hasn't been paired with user1 in the past two semesters.
+        while (
+            user2Index < eligibleUsers.length &&
+            (await haveBeenPaired(user1.id, eligibleUsers[user2Index].id))
+        ) {
+            user2Index++;
+        }
+
+        if (user2Index === eligibleUsers.length) {
+            console.log(`No eligible pair found for user ${user1.id}`);
             continue;
         }
 
-        // Check if they've been paired in last two semesters.
-        const hasBeenPaired = await checkIfPaired(
-            user1.userId,
-            user2.userId,
-            currentSemester.id
-        );
+        let user2 = eligibleUsers.splice(user2Index, 1)[0];
 
-        if (hasBeenPaired) {
-            console.log(
-                `Users ${user1.userId} and ${user2.userId} have been paired in last two semesters.`
-            );
-            continue;
-        }
-
-        // Create a pair.
         await prisma.pair.create({
             data: {
-                user1Id: user1.userId,
-                user2Id: user2.userId,
-                semesterId: currentSemester.id,
+                user1Id: user1.id,
+                user2Id: user2.id,
+                semesterId: user1.semester.id,
             },
         });
 
-        // Send them a DM.
-        const message = generateMessage(user1.userId, user2.userId);
-        await slackClient.conversations.open({
-            users: `${user1.userId},${user2.userId}`,
-            return_im: true,
-        });
-        await slackClient.chat.postMessage({
-            channel: `${user1.userId},${user2.userId}`,
-            text: message,
-        });
+        await sendDM(user1.id, user2.id);
     }
 };
-
-// Execute!
-// sendCoffeeChats().catch(console.error);
