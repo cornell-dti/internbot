@@ -1,7 +1,7 @@
-import prisma from "../lib/prisma";
+import prisma from "../lib/clients/prisma";
 
 // Function to get the bot status for a given server
-export async function getBotStatus(serverId: number): Promise<boolean> {
+export const getBotStatus = async (serverId: number): Promise<boolean> => {
     const server = await prisma.server.findUnique({
         where: { id: serverId },
     });
@@ -9,10 +9,10 @@ export async function getBotStatus(serverId: number): Promise<boolean> {
     if (!server) throw new Error("Server not found.");
 
     return server.enabled;
-}
+};
 
 // Function to toggle the bot status for a given server
-export async function toggleBotStatus(serverId: number): Promise<boolean> {
+export const toggleBotStatus = async (serverId: number): Promise<boolean> => {
     const server = await prisma.server.findUnique({
         where: { id: serverId },
     });
@@ -25,4 +25,4 @@ export async function toggleBotStatus(serverId: number): Promise<boolean> {
     });
 
     return updatedServer.enabled;
-}
+};

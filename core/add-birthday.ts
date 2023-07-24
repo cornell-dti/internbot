@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma";
+import prisma from "../lib/clients/prisma";
 
 export const addUserOrUpdateBirthday = async (
     email: string,

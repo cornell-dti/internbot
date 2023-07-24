@@ -1,18 +1,16 @@
-import { WebClient, ConversationsMembersResponse } from "@slack/web-api";
-import prisma from "../lib/prisma";
-import { oDefIn } from "@/lib/utils";
+import slackClient from "../lib/clients/slack";
+import prisma from "../lib/clients/prisma";
+import { oDefIn } from "../lib/utils";
 
-const slackToken = oDefIn(process.env.SLACK_BOT_TOKEN);
-const slackClient = new WebClient(slackToken);
 const coffeeChatChannelId = oDefIn(process.env.COFFEE_CHAT_CHANNEL_ID);
 
 /**
  * This function fetches all the users in a given Slack channel.
  */
 const fetchChannelMembers = async (channelId: string) => {
-    const response = (await slackClient.conversations.members({
+    const response = await slackClient.conversations.members({
         channel: channelId,
-    })) as ConversationsMembersResponse;
+    });
     return response.members as string[];
 };
 
@@ -65,7 +63,7 @@ const sendDM = async (user1: string, user2: string) => {
     await slackClient.chat.postMessage({ channel: user2, text: message });
 };
 
-const generateMessage = (user1: string, user2: string) => `
+export const generateMessage = (user1: string, user2: string) => `
 Hello <@${user1}> and <@${user2}>!
 
 I'm your friendly neighborhood :robot_face:, here to help you get to know your teammates by pairing everyone on a weekly basis! 
@@ -77,7 +75,7 @@ _Not interested? You can opt out of future pairings by leaving the <#${coffeeCha
 /**
  * This function does the main work of pairing up the users for coffee chats.
  */
-const sendCoffeeChats = async () => {
+export const sendCoffeeChats = async () => {
     const server = await prisma.server.findFirst({ where: { enabled: true } });
 
     if (!server) {

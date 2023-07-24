@@ -1,12 +1,9 @@
-import { WebClient } from "@slack/web-api";
-import prisma from "../lib/prisma";
+import prisma from "../lib/clients/prisma";
 import { differenceInMonths, startOfMonth, endOfMonth } from "date-fns";
-import { fLetDefIn } from "@/lib/utils";
+import { fLetDefIn } from "../lib/utils";
+import slackClient from "../lib/clients/slack";
 
-const slackToken = process.env.SLACK_BOT_TOKEN;
-const slackClient = new WebClient(slackToken);
-
-export async function main() {
+export const main = async () => {
     const teamResponse = await slackClient.team.info();
 
     const currentMonth = new Date();
@@ -87,7 +84,7 @@ export async function main() {
             )
         );
     }
-}
+};
 
 // Execute!
 // main()
