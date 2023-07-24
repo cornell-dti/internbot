@@ -71,8 +71,6 @@ const haveBeenPaired = async (user1Id: string, user2Id: string) => {
         take: 2,
     });
 
-    console.log(`pastPairings for ${user1Id} and ${user2Id}: `, pastPairings);
-
     return pastPairings.length > 0;
 };
 
@@ -81,8 +79,15 @@ const haveBeenPaired = async (user1Id: string, user2Id: string) => {
  */
 const sendDM = async (user1: string, user2: string) => {
     const message = generateMessage(user1, user2);
-    await slackClient.chat.postMessage({ channel: user1, text: message });
-    await slackClient.chat.postMessage({ channel: user2, text: message });
+    const { channel } = await slackClient.conversations.open({
+        users: `${user1},${user2}`,
+    });
+    if (!channel || !channel.id)
+        throw new Error("Could not open conversation with pair of users");
+    await slackClient.chat.postMessage({
+        channel: channel.id,
+        text: message,
+    });
 };
 
 export const generateMessage = (user1: string, user2: string) => `

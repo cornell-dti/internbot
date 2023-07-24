@@ -11,15 +11,16 @@ test("sendCoffeeChats creates pairings and sends DMs when the bot is enabled", a
     // Call the sendCoffeeChats function
     await sendCoffeeChats();
 
-    // Verify the Prisma and Slack client methods were called correctly
+    // Verify the Prisma and Slack client methods were called correctly...
 
-    // Specifically, check how many pairs were created: with 7 eligible users
+    // ...Specifically, check how many pairs were created: with 7 eligible users
     expect(prismaMock.pair.create).toBeCalledTimes(3);
     expect(slackMock.conversations.members).toBeCalledWith({
         channel: process.env.COFFEE_CHAT_CHANNEL_ID,
     });
-    // Resulting in 4 Group DMs being created.
-    expect(slackMock.chat.postMessage).toBeCalledTimes(2 * 3); // Messages should be sent to both the users in the pair
+
+    // ...Resulting in 3 Group DMs being created.
+    expect(slackMock.chat.postMessage).toBeCalledTimes(3); // Messages should be sent to both the users in the pair
     expect(slackMock.chat.postMessage).toBeCalledWith({
         channel: expect.any(String),
         text: expect.any(String),

@@ -21,6 +21,10 @@ const initMocks = (slackMock: DeepMockProxy<WebClient>) => {
         members: mockUsersInChannel,
     });
     slackMock.chat.postMessage.mockResolvedValue({ ok: true });
+    slackMock.conversations.open.mockResolvedValue({
+        ok: true,
+        channel: { id: process.env.COFFEE_CHAT_CHANNEL_ID },
+    });
 };
 
 export const slackMock = slack as unknown as DeepMockProxy<WebClient>;

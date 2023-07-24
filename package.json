@@ -9,10 +9,8 @@
         "build": "pnpm dlx prisma generate && pnpm dlx prisma db push && next build",
         "test": "jest",
         "start": "next start",
-        "lint": "next lint"
-    },
-    "prisma": {
-        "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+        "lint": "next lint",
+        "scripts:populate": "ts-node -O '{\"module\": \"commonjs\"}' core/populate-sem-users.ts"
     },
     "dependencies": {
         "@prisma/client": "^5.0.0",

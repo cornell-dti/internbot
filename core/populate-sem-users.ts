@@ -3,7 +3,7 @@ import { differenceInMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fLetDefIn } from "../lib/utils";
 import slackClient from "../lib/clients/slack";
 
-export const main = async () => {
+export const populate = async () => {
     const teamResponse = await slackClient.team.info();
 
     const currentMonth = new Date();
@@ -87,12 +87,12 @@ export const main = async () => {
 };
 
 // Execute!
-// main()
-//     .then(async () => {
-//         await prisma.$disconnect();
-//     })
-//     .catch(async (e) => {
-//         console.error(e);
-//         await prisma.$disconnect();
-//         process.exit(1);
-//     });
+populate()
+    .then(async () => {
+        await prisma.$disconnect();
+    })
+    .catch(async (e) => {
+        console.error(e);
+        await prisma.$disconnect();
+        process.exit(1);
+    });
