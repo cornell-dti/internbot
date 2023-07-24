@@ -19,10 +19,13 @@ model User {
   id              String           @id
   name            String
   email           String
+  birthday        DateTime?
+
   serverId        Int
   server          Server           @relation(fields: [serverId], references: [id])
-  birthday        DateTime?
+
   semesterToUsers SemesterToUser[]
+  
   user1Pairs      Pair[]           @relation("User1Pairs")
   user2Pairs      Pair[]           @relation("User2Pairs")
 }

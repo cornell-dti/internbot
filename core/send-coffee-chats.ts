@@ -1,17 +1,31 @@
 import slackClient from "../lib/clients/slack";
 import prisma from "../lib/clients/prisma";
-import { oDefIn } from "../lib/utils";
+import { listToSet, oDefIn, pairList } from "../lib/utils";
+import { User } from "@prisma/client";
 
 const coffeeChatChannelId = oDefIn(process.env.COFFEE_CHAT_CHANNEL_ID);
 
 /**
  * This function fetches all the users in a given Slack channel.
  */
-const fetchChannelMembers = async (channelId: string) => {
+const fetchChannelMemberIDs = async (channelId: string) => {
     const response = await slackClient.conversations.members({
         channel: channelId,
     });
     return response.members as string[];
+};
+
+/**
+ * Gets the current (aka. latest, most recent) semester.
+ * @returns The current semester.
+ */
+const getCurrentSemester = async () => {
+    const semesters = await prisma.semester.findMany({
+        orderBy: { endDate: "desc" },
+        take: 1,
+    });
+
+    return semesters[0];
 };
 
 /**
@@ -30,10 +44,16 @@ const fetchActiveUsers = async () => {
         },
     });
 
-    const activeUsers = semesters.flatMap((s) =>
-        s.semesterToUsers.map((stu) => ({ ...stu.user, semester: s }))
+    const users = listToSet(
+        semesters
+            .map((sem) => sem.semesterToUsers)
+            .flat()
+            .map((semToU) => semToU.user)
+            .flat(),
+        (a, b) => a.id === b.id
     );
-    return activeUsers;
+
+    return users;
 };
 
 /**
@@ -50,6 +70,8 @@ const haveBeenPaired = async (user1Id: string, user2Id: string) => {
         orderBy: { id: "desc" },
         take: 2,
     });
+
+    console.log(`pastPairings for ${user1Id} and ${user2Id}: `, pastPairings);
 
     return pastPairings.length > 0;
 };
@@ -78,45 +100,42 @@ _Not interested? You can opt out of future pairings by leaving the <#${coffeeCha
 export const sendCoffeeChats = async () => {
     const server = await prisma.server.findFirst({ where: { enabled: true } });
 
-    if (!server) {
+    // If the bot is disabled, do nothing
+
+    if (!server || !server.enabled) {
         console.log("Bot is disabled.");
         return;
     }
 
-    const channelMembers = await fetchChannelMembers(coffeeChatChannelId);
+    // Fetch the IDs of all users that are both active in the last two semesters and currently in the coffee chat channel
+
+    const channelMemberIDs = await fetchChannelMemberIDs(coffeeChatChannelId);
+
     const activeUsers = await fetchActiveUsers();
 
-    const eligibleUsers = activeUsers.filter((user) =>
-        channelMembers.includes(user.id)
+    let eligibleUsers = activeUsers.filter(
+        (user) => channelMemberIDs.indexOf(user.id) !== -1
     );
 
-    while (eligibleUsers.length > 1) {
-        let user1 = oDefIn(eligibleUsers.pop());
-        let user2Index = 0;
+    // Pair the users randomly
 
-        // Find a user who hasn't been paired with user1 in the past two semesters.
-        while (
-            user2Index < eligibleUsers.length &&
-            (await haveBeenPaired(user1.id, eligibleUsers[user2Index].id))
-        ) {
-            user2Index++;
-        }
+    const pairings = await pairList<(typeof eligibleUsers)[number]>(
+        eligibleUsers,
+        (a, b) => a.id === b.id,
+        async (a, b) => !(await haveBeenPaired(a.id, b.id)),
+        true
+    );
 
-        if (user2Index === eligibleUsers.length) {
-            console.log(`No eligible pair found for user ${user1.id}`);
-            continue;
-        }
+    // For each pairing, send a DM to the users and save to DB
 
-        let user2 = eligibleUsers.splice(user2Index, 1)[0];
-
+    for (const pairing of pairings) {
+        await sendDM(pairing[0].id, pairing[1].id);
         await prisma.pair.create({
             data: {
-                user1Id: user1.id,
-                user2Id: user2.id,
-                semesterId: user1.semester.id,
+                user1Id: pairing[0].id,
+                user2Id: pairing[1].id,
+                semesterId: (await getCurrentSemester()).id,
             },
         });
-
-        await sendDM(user1.id, user2.id);
     }
 };

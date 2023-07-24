@@ -3,14 +3,7 @@ import { WebClient } from "@slack/web-api";
 import { mockDeep, mockReset, DeepMockProxy } from "jest-mock-extended";
 
 import slack from "../../lib/clients/slack";
-import { mockUsers } from "../mock-data/data";
-
-// Define mock response
-const mockMembers = mockUsers.map((u) => u.id);
-const mockResponse = {
-    ok: true,
-    members: mockMembers,
-};
+import { mockUsers, mockUsersInChannel } from "../mock-data/data";
 
 jest.mock("../../lib/clients/slack", () => ({
     __esModule: true,
@@ -19,8 +12,15 @@ jest.mock("../../lib/clients/slack", () => ({
 
 beforeEach(() => {
     mockReset(slackMock);
-    // Mock the return value
-    slackMock.conversations.members.mockResolvedValue(mockResponse);
+    initMocks(slackMock);
 });
+
+const initMocks = (slackMock: DeepMockProxy<WebClient>) => {
+    slackMock.conversations.members.mockResolvedValue({
+        ok: true,
+        members: mockUsersInChannel,
+    });
+    slackMock.chat.postMessage.mockResolvedValue({ ok: true });
+};
 
 export const slackMock = slack as unknown as DeepMockProxy<WebClient>;

@@ -1,53 +1,12 @@
-// prisma.ts
 import { Pair, PrismaClient, PrismaPromise } from "@prisma/client";
 import { mockDeep, mockReset, DeepMockProxy } from "jest-mock-extended";
-
 import prisma from "../../lib/clients/prisma";
-import { mockPairings, mockUsers } from "../mock-data/data";
-
-// Define mock response
-const mockSemesters = [
-    {
-        id: 1,
-        name: "Semester 1",
-        startDate: new Date("2021-01-01"),
-        endDate: new Date("2021-06-30"),
-        semesterToUsers: [
-            {
-                active: true,
-                user: {
-                    id: mockUsers[0].id,
-                    name: mockUsers[0].name,
-                    // you may also need to include other user properties here
-                },
-            },
-            {
-                active: true,
-                user: {
-                    id: mockUsers[1].id,
-                    name: mockUsers[1].name,
-                    // you may also need to include other user properties here
-                },
-            },
-        ],
-    },
-    {
-        id: 2,
-        name: "Semester 2",
-        startDate: new Date("2021-07-01"),
-        endDate: new Date("2021-12-31"),
-        semesterToUsers: [
-            {
-                active: true,
-                user: {
-                    id: mockUsers[2].id,
-                    name: mockUsers[2].name,
-                    // you may also need to include other user properties here
-                },
-            },
-        ],
-    },
-];
+import {
+    mockPairings,
+    mockUsers,
+    mockServers,
+    mockSemesters,
+} from "../mock-data/data";
 
 jest.mock("../../lib/clients/prisma", () => ({
     __esModule: true,
@@ -56,9 +15,13 @@ jest.mock("../../lib/clients/prisma", () => ({
 
 beforeEach(() => {
     mockReset(prismaMock);
-    // Mock the return value
+    initMocks(prismaMock);
+});
+
+const initMocks = (prismaMock: DeepMockProxy<PrismaClient>) => {
+    // Mock: resolve instantly to get all semesters.
     prismaMock.semester.findMany.mockResolvedValue(mockSemesters);
-    // Mock the findMany method of the Prisma pairings client
+    // Mock: implementation of the findMany method to filter pairings.
     prismaMock.pair.findMany.mockImplementation(
         (params): PrismaPromise<Pair[]> => {
             const { user1Id, user2Id } = params?.where?.OR![0] as unknown as {
@@ -77,6 +40,15 @@ beforeEach(() => {
             return Promise.resolve(result) as PrismaPromise<Pair[]>;
         }
     );
-});
+    // Mock: resolve instantly to get the enabled semester.
+    prismaMock.server.findFirst.mockResolvedValue(mockServers.enabled);
+    // Mock: resolve instantly to create a new pairing (doesn't matter what the values are).
+    prismaMock.pair.create.mockResolvedValue({
+        id: 1,
+        user1Id: "N/A 1",
+        user2Id: "N/A 2",
+        semesterId: 1,
+    });
+};
 
 export const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
