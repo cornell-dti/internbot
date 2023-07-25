@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 
 export const metadata = {
     title: "Internbot",
@@ -22,6 +23,9 @@ export default function RootLayout({
         <ClerkProvider>
             <html lang='en'>
                 <body className={inter.variable + "w-screen h-screen"}>
+                    <div className='flex flex-row-reverse flex-nowrap w-full h-24 p-4'>
+                        <UserButton afterSignOutUrl='/' />
+                    </div>
                     {children}
                 </body>
             </html>

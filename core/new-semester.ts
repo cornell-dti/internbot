@@ -12,10 +12,14 @@ import slackClient from "../lib/clients/slack";
 export const populate = async () => {
     const teamResponse = await slackClient.team.info();
 
+    console.log("DEBUG: teamResponse", teamResponse);
+
     const currentMonth = new Date();
 
     // Retrieve the users of the team and add them to our database.
     const usersResponse = await slackClient.users.list();
+
+    console.log("DEBUG: usersResponse", usersResponse);
 
     // prettier-ignore
     // Add each user in the Slack server to our database.
@@ -42,6 +46,8 @@ export const populate = async () => {
         )
     );
 
+    console.log("DEBUG: users", users);
+
     // prettier-ignore
     // Create or update a server entry identified by the Slack team ID.
     const server = 
@@ -66,6 +72,8 @@ export const populate = async () => {
         )
     );
 
+    console.log("DEBUG: server", server);
+
     // Check if it's the start of a new semester
     const breakpoint = 8; // August!
     if (
@@ -84,6 +92,8 @@ export const populate = async () => {
             },
         });
 
+        console.log("DEBUG: semester", semester);
+
         // Add users to the new semester
         const semesterToUser = await Promise.all(
             users.map((user) =>
@@ -96,6 +106,8 @@ export const populate = async () => {
                 })
             )
         );
+
+        console.log("DEBUG: semesterToUser", semesterToUser);
     }
 };
 
