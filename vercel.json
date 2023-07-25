@@ -5,6 +5,10 @@
         {
             "path": "/api/coffeechat",
             "schedule": "0 0 * * 1"
+        },
+        {
+            "path": "/api/populate",
+            "schedule": "0 0 15 1,8 *"
         }
     ]
 }
