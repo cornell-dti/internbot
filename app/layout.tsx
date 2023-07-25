@@ -21,7 +21,9 @@ export default function RootLayout({
     return (
         <ClerkProvider>
             <html lang='en'>
-                <body className={inter.variable}>{children}</body>
+                <body className={inter.variable + "w-screen h-screen"}>
+                    {children}
+                </body>
             </html>
         </ClerkProvider>
     );

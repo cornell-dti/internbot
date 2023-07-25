@@ -3,8 +3,12 @@ import { differenceInMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fLetDefIn } from "../lib/utils";
 import slackClient from "../lib/clients/slack";
 
-// Completely untested...
-
+/**
+ * This function initializes the database for a new semester:
+ * 1. It adds/updates all the users in the Slack server to our database, based on Slack server.
+ * 2. It adds/updates an existing server entry in our database, based on Slack team ID.
+ *
+ */
 export const populate = async () => {
     const teamResponse = await slackClient.team.info();
 
@@ -14,7 +18,7 @@ export const populate = async () => {
     const usersResponse = await slackClient.users.list();
 
     // prettier-ignore
-    // Add each user to our database.
+    // Add each user in the Slack server to our database.
     const users = await Promise.all(
         fLetDefIn(usersResponse.members, (members) =>
             members.map((member) =>
@@ -38,33 +42,40 @@ export const populate = async () => {
         )
     );
 
-    // Create or update a server entry
-    const server = await fLetDefIn(
-        teamResponse.team?.id,
-        async (teamID) =>
-            await fLetDefIn(
-                teamResponse.team?.id,
-                async (teamName) =>
-                    await prisma.server.upsert({
-                        where: { id: parseInt(teamID) },
-                        update: {},
-                        create: {
-                            id: parseInt(teamID),
-                            name: teamName,
-                            users: {
-                                connect: users.map((user) => ({ id: user.id })),
-                            },
-                        },
-                    })
-            )
+    // prettier-ignore
+    // Create or update a server entry identified by the Slack team ID.
+    const server = 
+        await fLetDefIn(teamResponse.team?.id, async (teamID) =>
+        await fLetDefIn(teamResponse.team?.id, async (teamName) =>
+            await prisma.server.upsert({
+                where: { id: parseInt(teamID) },
+                update: {
+                    name: teamName,
+                    users: {
+                        connect: users.map((user) => ({ id: user.id })),
+                    },
+                },
+                create: {
+                    id: parseInt(teamID),
+                    name: teamName,
+                    users: {
+                        connect: users.map((user) => ({ id: user.id })),
+                    },
+                },
+            })
+        )
     );
 
     // Check if it's the start of a new semester
-    if (currentMonth.getMonth() === 0 || currentMonth.getMonth() === 6) {
+    const breakpoint = 8; // August!
+    if (
+        currentMonth.getMonth() === 0 ||
+        currentMonth.getMonth() === breakpoint
+    ) {
         const semester = await prisma.semester.create({
             data: {
                 name: `Semester ${
-                    currentMonth.getMonth() < 6 ? "Spring" : "Fall"
+                    currentMonth.getMonth() < breakpoint ? "Spring" : "Fall"
                 } ${currentMonth.getFullYear()}`,
                 startDate: startOfMonth(currentMonth),
                 endDate: endOfMonth(

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { exec } from "@/core/populate-sem-users";
+import { exec } from "@/core/new-semester";
 
 export async function POST() {
     await exec();
