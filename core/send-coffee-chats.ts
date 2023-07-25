@@ -144,3 +144,8 @@ export const sendCoffeeChats = async () => {
         });
     }
 };
+
+export const exec = async () => {
+    await sendCoffeeChats();
+    await prisma.$disconnect();
+};

@@ -1,4 +1,10 @@
 {
-  "buildCommand": "pnpm turbo build",
-  "ignoreCommand": "pnpm dlx turbo-ignore"
+    "buildCommand": "pnpm turbo build",
+    "ignoreCommand": "pnpm dlx turbo-ignore",
+    "crons": [
+        {
+            "path": "/api/coffeechat",
+            "schedule": "0 0 * * 1"
+        }
+    ]
 }

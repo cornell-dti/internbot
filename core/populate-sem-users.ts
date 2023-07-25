@@ -3,6 +3,8 @@ import { differenceInMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fLetDefIn } from "../lib/utils";
 import slackClient from "../lib/clients/slack";
 
+// Completely untested...
+
 export const populate = async () => {
     const teamResponse = await slackClient.team.info();
 
@@ -62,7 +64,7 @@ export const populate = async () => {
         const semester = await prisma.semester.create({
             data: {
                 name: `Semester ${
-                    currentMonth.getMonth() === 0 ? "Spring" : "Fall"
+                    currentMonth.getMonth() < 6 ? "Spring" : "Fall"
                 } ${currentMonth.getFullYear()}`,
                 startDate: startOfMonth(currentMonth),
                 endDate: endOfMonth(
@@ -86,13 +88,7 @@ export const populate = async () => {
     }
 };
 
-// Execute!
-populate()
-    .then(async () => {
-        await prisma.$disconnect();
-    })
-    .catch(async (e) => {
-        console.error(e);
-        await prisma.$disconnect();
-        process.exit(1);
-    });
+export const exec = async () => {
+    await populate();
+    await prisma.$disconnect();
+};
