@@ -18,7 +18,7 @@ model Server {
 model User {
   id              String           @id
   name            String
-  email           String
+  email           String?
   birthday        DateTime?
 
   serverId        Int

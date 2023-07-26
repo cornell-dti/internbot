@@ -71,8 +71,8 @@ const GatedActions = async () => {
                 <button formAction={sendCoffeeChats}>
                     Manually send a round of coffee chats
                 </button>
-                <input type='email' name='email' required />
-                <input type='date' name='date' required />
+                <input type='email' name='email' />
+                <input type='date' name='date' />
                 <button type='submit'>Submit New Birthday</button>
             </form>
         </div>

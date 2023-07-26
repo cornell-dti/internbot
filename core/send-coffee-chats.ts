@@ -146,6 +146,7 @@ export const sendCoffeeChats = async () => {
 };
 
 export const exec = async () => {
+    console.log("Sending coffee chats...");
     await sendCoffeeChats();
-    await prisma.$disconnect();
+    console.log("Done!");
 };

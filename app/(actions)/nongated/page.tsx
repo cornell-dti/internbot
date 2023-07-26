@@ -5,7 +5,6 @@ import { exec as execNewSem } from "@/core/new-semester";
 const NonGatedActions = () => {
     const action = async () => {
         "use server";
-        console.log("Populating new semester...");
         await execNewSem();
     };
 

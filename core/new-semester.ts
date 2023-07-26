@@ -1,6 +1,6 @@
 import prisma from "../lib/clients/prisma";
 import { differenceInMonths, startOfMonth, endOfMonth } from "date-fns";
-import { fLetDefIn } from "../lib/utils";
+import { fLetDefIn, fLetIn, stringToNumber } from "../lib/utils";
 import slackClient from "../lib/clients/slack";
 
 /**
@@ -10,108 +10,83 @@ import slackClient from "../lib/clients/slack";
  *
  */
 export const populate = async () => {
-    const teamResponse = await slackClient.team.info();
-
-    console.log("DEBUG: teamResponse", teamResponse);
-
     const currentMonth = new Date();
 
-    // Retrieve the users of the team and add them to our database.
+    const teamResponse = await slackClient.team.info();
+    const teamID = stringToNumber(teamResponse.team?.id);
+    const teamName = teamResponse.team?.name || "Default";
+
+    // Create/update server
+    await prisma.server.upsert({
+        where: { id: teamID },
+        update: { name: teamName },
+        create: { id: teamID, name: teamName },
+    });
+
+    // Create/update users
     const usersResponse = await slackClient.users.list();
-
-    console.log("DEBUG: usersResponse", usersResponse);
+    const humans =
+        usersResponse.members?.filter(
+            (member) => !member.is_bot && !member.deleted
+        ) || [];
 
     // prettier-ignore
-    // Add each user in the Slack server to our database.
     const users = await Promise.all(
-        fLetDefIn(usersResponse.members, (members) =>
-            members.map((member) =>
-                fLetDefIn(member.id, (memID) =>
-                fLetDefIn(member.name, (memName) =>
-                fLetDefIn(member.profile?.email, (memEmail) => // TODO: make it resilient to if people don't have emails
-                fLetDefIn(teamResponse.team?.id, (resID) =>
-                    prisma.user.upsert({
-                        where: { id: memID },
-                        update: {},
-                        create: {
-                            name: memName,
-                            email: memEmail,
-                            id: memID,
-                            server: { connect: { id: parseInt(resID) } },
-                            birthday: null,
+        humans.map((human) =>
+            fLetDefIn(human.id, (memID) =>
+            fLetDefIn(human.name, (memName) =>
+            fLetIn(human.profile?.email, (memEmail) =>
+                memEmail &&
+                prisma.user.upsert({
+                    where: { id: memID },
+                    update: {},
+                    create: {
+                        name: memName,
+                        email: memEmail,
+                        id: memID,
+                        server: { 
+                            connect: { 
+                                id: teamID
+                            } 
                         },
-                    })
-                ))))
-            )
-        )
+                        birthday: null,
+                    },
+                })
+        ))))
     );
 
-    console.log("DEBUG: users", users);
+    // Create/update semester
+    const breakpoint = 6;
+    const semester = await prisma.semester.create({
+        data: {
+            name: `Semester ${
+                currentMonth.getMonth() < breakpoint ? "Spring" : "Fall"
+            } ${currentMonth.getFullYear()}`,
+            startDate: startOfMonth(currentMonth),
+            endDate: endOfMonth(
+                currentMonth.setMonth(currentMonth.getMonth() + 5)
+            ),
+        },
+    });
 
-    // prettier-ignore
-    // Create or update a server entry identified by the Slack team ID.
-    const server = 
-        await fLetDefIn(teamResponse.team?.id, async (teamID) =>
-        await fLetDefIn(teamResponse.team?.id, async (teamName) =>
-            await prisma.server.upsert({
-                where: { id: parseInt(teamID) },
-                update: {
-                    name: teamName,
-                    users: {
-                        connect: users.map((user) => ({ id: user.id })),
-                    },
-                },
-                create: {
-                    id: parseInt(teamID),
-                    name: teamName,
-                    users: {
-                        connect: users.map((user) => ({ id: user.id })),
-                    },
-                },
-            })
-        )
-    );
-
-    console.log("DEBUG: server", server);
-
-    // Check if it's the start of a new semester
-    const breakpoint = 8; // August!
-    if (
-        currentMonth.getMonth() === 0 ||
-        currentMonth.getMonth() === breakpoint
-    ) {
-        const semester = await prisma.semester.create({
-            data: {
-                name: `Semester ${
-                    currentMonth.getMonth() < breakpoint ? "Spring" : "Fall"
-                } ${currentMonth.getFullYear()}`,
-                startDate: startOfMonth(currentMonth),
-                endDate: endOfMonth(
-                    currentMonth.setMonth(currentMonth.getMonth() + 5)
-                ),
-            },
-        });
-
-        console.log("DEBUG: semester", semester);
-
-        // Add users to the new semester
-        const semesterToUser = await Promise.all(
-            users.map((user) =>
+    // Add users to the new semester
+    const semesterToUser = await Promise.all(
+        humans.map(
+            ({ id }) =>
+                id &&
                 prisma.semesterToUser.create({
                     data: {
-                        userId: user.id,
+                        userId: id,
                         semesterId: semester.id,
                         active: true,
                     },
                 })
-            )
-        );
-
-        console.log("DEBUG: semesterToUser", semesterToUser);
-    }
+        )
+    );
 };
 
 export const exec = async () => {
+    console.log("Initializing new semester...");
     await populate();
-    await prisma.$disconnect();
+    console.log("Done!");
 };
