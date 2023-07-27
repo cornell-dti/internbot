@@ -1,4 +1,4 @@
-import { sendCoffeeChats, generateMessage } from "../../core/send-coffee-chats";
+import { sendCoffeeChats } from "../../core/send-coffee-chats";
 import { prismaMock } from "../mock-clients/prisma";
 import { slackMock } from "../mock-clients/slack";
 import { mockServers } from "../mock-data/data";

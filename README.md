@@ -32,6 +32,7 @@ Specifically,
 pnpm install              # Install Dependencies
 pnpm dlx prisma generate  # Generate Prisma type definitions
 pnpm dev                  # Start Development Server
+pnpm test                 # Run Tests
 ```
 
 ## Roadmap
@@ -48,6 +49,7 @@ pnpm dev                  # Start Development Server
 
 ### !Testing!
 
+-   [x] Add Github Actions for testing.
 -   [x] Add unit tests for pairing algorithm.
 -   [ ] Add unit tests for populating the database.
 -   [ ] Add unit tests for all components.
