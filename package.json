@@ -9,8 +9,7 @@
         "build": "pnpm dlx prisma generate && pnpm dlx prisma db push && next build",
         "test": "jest",
         "start": "next start",
-        "lint": "next lint",
-        "scripts:populate": "ts-node -O '{\"module\": \"commonjs\"}' core/populate-sem-users.ts"
+        "lint": "next lint"
     },
     "dependencies": {
         "@clerk/nextjs": "^4.23.1",
