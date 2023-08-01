@@ -63,14 +63,15 @@ const GatedActions = async () => {
     return (
         <div>
             <h1>Gated Actions</h1>
-
-            <form action={addBirthday}>
+            <form>
                 <button formAction={toggleBot}>
                     Toggle Bot Enabled/Disabled
                 </button>
                 <button formAction={sendCoffeeChats}>
                     Manually send a round of coffee chats
                 </button>
+            </form>
+            <form action={addBirthday}>
                 <input type='email' name='email' />
                 <input type='date' name='date' />
                 <button type='submit'>Submit New Birthday</button>
