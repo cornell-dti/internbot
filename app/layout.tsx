@@ -14,21 +14,14 @@ const inter = Inter({
     display: "swap",
 });
 
-export default function RootLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    return (
-        <ClerkProvider>
-            <html lang='en'>
-                <body className={inter.variable + "w-screen h-screen"}>
-                    <div className='flex flex-row-reverse flex-nowrap w-full h-24 p-4'>
-                        <UserButton afterSignOutUrl='/' />
-                    </div>
-                    {children}
-                </body>
-            </html>
-        </ClerkProvider>
-    );
-}
+const RootLayout = ({ children }: { children: React.ReactNode }) => (
+    <ClerkProvider>
+        <html lang='en'>
+            <body className={inter.variable + "w-screen h-screen"}>
+                {children}
+            </body>
+        </html>
+    </ClerkProvider>
+);
+
+export default RootLayout;

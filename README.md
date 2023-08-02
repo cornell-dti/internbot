@@ -59,8 +59,6 @@ pnpm test                 # Run Tests
 ### Improvements
 
 -   [ ] Polish up the UI.
-    -   [ ] We should be able to instantly any specific user's birthday and activity.
+    -   [ ] We should be able to instantly specify any specific user's birthday and activity.
     -   [ ] We should be able to see all such users in a single page.
-    -   [ ] The entire aesthetic should be improved at least somewhat.
--   [ ] Separate out actions into separate components within `/gated` and `/nongated`.
 -   [ ] Add migration scripts for clearing out old semesters, schema changes, etc.

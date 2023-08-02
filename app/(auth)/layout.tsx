@@ -7,10 +7,8 @@ export default function RootLayout({
 }) {
     return (
         <>
-            <div className='w-full flex flex-col justify-center align-middle'>
-                <Suspense fallback={<div>Loading...</div>}>
-                    <center>{children}</center>
-                </Suspense>
+            <div className='w-full flex flex-row justify-center align-middle p-16'>
+                <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
             </div>
         </>
     );
