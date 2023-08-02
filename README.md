@@ -21,7 +21,7 @@ Specifically,
         co-located within the component.
     -   Experimental: App Directory for organizing Next.js pages, layouts, error handling and
         routing.
-    -   React, including the latest features (e.g. async components and Suspense)
+    -   And More Features! (Async components and Suspense; Parallel Routes, etc.)
 -   Tailwind CSS for styling
 -   Jest for testing
 -   Clerk for authentication
