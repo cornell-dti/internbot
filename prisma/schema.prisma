@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Server {
+  id      Int     @id @default(autoincrement())
+  name    String
+  enabled Boolean @default(true)
+  users   User[]
+}
+
+model User {
+  id              String           @id
+  name            String
+  email           String?
+  birthday        DateTime?
+
+  serverId        Int
+  server          Server           @relation(fields: [serverId], references: [id])
+
+  semesterToUsers SemesterToUser[]
+  
+  user1Pairs      Pair[]           @relation("User1Pairs")
+  user2Pairs      Pair[]           @relation("User2Pairs")
+}
+
+model Semester {
+  id              Int              @id @default(autoincrement())
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  semesterToUsers SemesterToUser[]
+  pairs           Pair[]
+}
+
+model SemesterToUser {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  semesterId Int
+  semester   Semester @relation(fields: [semesterId], references: [id])
+  active     Boolean
+
+  @@id([userId, semesterId])
+}
+
+model Pair {
+  id         Int      @id @default(autoincrement())
+  user1Id    String
+  user1      User     @relation(fields: [user1Id], references: [id], name: "User1Pairs")
+  user2Id    String
+  user2      User     @relation(fields: [user2Id], references: [id], name: "User2Pairs")
+  semesterId Int
+  semester   Semester @relation(fields: [semesterId], references: [id])
+}
