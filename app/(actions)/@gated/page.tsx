@@ -50,7 +50,7 @@ const GatedActions = async () => {
         "use server";
 
         const email = formdata.get("email") as string | null;
-        const date = formdata.get("date") as string | null; // format: YYYY-MM-DD
+        const date = formdata.get("date") as string | null;
 
         if (!email || !date) {
             return;
@@ -70,14 +70,14 @@ const GatedActions = async () => {
     };
 
     return (
-        <div>
+        <div className='flex flex-col gap-4 h-full w-full'>
             <form className='flex flex-col gap-4 w-full'>
                 <div className='flex flex-row gap-4'>
                     <button
                         formAction={toggleBot}
-                        className='bg-gray-600 hover:bg-gray-800 transition-all text-white font-semibold p-2 w-24 rounded-full'
+                        className='bg-rose-600 hover:bg-gray-800 transition-all text-white font-semibold h-12 w-12 rounded-full'
                     >
-                        <Power className='inline-block' />
+                        <Power className='inline-block -mt-1' />
                     </button>
                     <Help text='Enable/Disable the Bot' />
                 </div>
@@ -91,11 +91,28 @@ const GatedActions = async () => {
                     <Help text='Manually send out a round of coffee chats!' />
                 </div>
             </form>
-            {/* <form action={addBirthday}>
-                <input type='email' name='email' />
-                <input type='date' name='date' />
-                <button type='submit'>Submit New Birthday</button>
-            </form> */}
+            <form
+                action={addBirthday}
+                className='border-2 border-gray-200 rounded-lg flex flex-col gap-2 p-4 w-full'
+            >
+                <input
+                    type='email'
+                    name='email'
+                    placeholder='Member Email'
+                    className='bg-gray-100 rounded-md p-2'
+                />
+                <input
+                    type='date'
+                    name='date'
+                    className='bg-gray-100 rounded-md p-2'
+                />
+                <button
+                    type='submit'
+                    className='bg-gray-200 hover:bg-gray-400 transition-all font-semibold p-2 px-3 w-fit rounded'
+                >
+                    Change Member&apos;s Birthday
+                </button>
+            </form>
         </div>
     );
 };

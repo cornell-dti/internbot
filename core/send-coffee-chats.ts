@@ -1,7 +1,6 @@
 import slackClient from "../lib/clients/slack";
 import prisma from "../lib/clients/prisma";
 import { listToSet, oDefIn, pairList } from "../lib/utils";
-import { User } from "@prisma/client";
 
 const coffeeChatChannelId = oDefIn(process.env.COFFEE_CHAT_CHANNEL_ID);
 

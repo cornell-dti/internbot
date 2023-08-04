@@ -12,7 +12,7 @@ const Layout = ({
 }) => {
     return (
         <div className='w-full h-full flex flex-row align-middle justify-center p-16'>
-            <div className='max-h-96 w-96 shadow-lg bg-white border-gray-200 rounded-md p-8'>
+            <div className='h-fit w-96 shadow-lg bg-white border-gray-200 rounded-md p-8'>
                 <div className='flex flex-row-reverse'>
                     <UserButton afterSignOutUrl='/' />
                 </div>
