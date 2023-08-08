@@ -1,8 +1,18 @@
 {
-	"crons": [
-		{
-			"path": "/api/coffeechat",
-			"schedule": "0 0 * * 1"
-		}
-	]
+    "buildCommand": "pnpm turbo build",
+    "ignoreCommand": "pnpm dlx turbo-ignore",
+    "crons": [
+        {
+            "path": "/api/coffeechat",
+            "schedule": "0 0 * * 1"
+        },
+        {
+            "path": "/api/populate",
+            "schedule": "0 0 15 1,8 *"
+        },
+        {
+            "path": "/api/birthday",
+            "schedule": "0 12 * * *"
+        }
+    ]
 }
