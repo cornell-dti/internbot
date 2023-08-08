@@ -1,6 +1,6 @@
 # Internbot
 
-Simple serverless Slack bot for DTI Coffee Chats.
+Simple serverless Slack bot for DTI Coffee Chats and Birthday messages!
 
 Should pair up people in the `#coffee-chats` channel every week.
 
