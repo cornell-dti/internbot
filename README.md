@@ -44,21 +44,18 @@ pnpm test                 # Run Tests
 -   [x] Authentication with Slack, limited to emails in the database.
 -   [x] Edit user info: active/inactive, birthday.
 -   [x] Global bot disable/enable.
--   [ ] Send out birthday messages whenever a user's birthday is today!
--   [ ] Send out coffee chat follow-up messages after 5 days.
+-   [x] Send out birthday messages whenever a user's birthday is today!
 
 ### !Testing!
 
 -   [x] Add Github Actions for testing.
--   [x] Add unit tests for pairing algorithm.
+-   [x] Add unit tests for pairing algorithm, including when bot is disabled.
+-   [x] Add unit tests for birthday messaging, including when bot is disabled.
 -   [ ] Add unit tests for populating the database.
 -   [ ] Add unit tests for all components.
--   [ ] Add unit tests for changing user info (birthday, active/inactive).
--   [ ] Add unit tests for sending birthday messages, follow-up messages.
 
 ### Improvements
 
--   [ ] Polish up the UI.
-    -   [ ] We should be able to instantly specify any specific user's birthday and activity.
-    -   [ ] We should be able to see all such users in a single page.
+-   [x] Polish up the UI.
+    -   [ ] Bulk Editing ?
 -   [ ] Add migration scripts for clearing out old semesters, schema changes, etc.
