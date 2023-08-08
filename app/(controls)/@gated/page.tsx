@@ -8,32 +8,6 @@ import { toggleCurrentBotStatus } from "@/core/bot-status";
 import { Power } from "lucide-react";
 import Help from "@/components/help";
 
-const getHasDashboardAccess = async () => {
-    const checkIfUserHasAccess = async (email: string) =>
-        (await prisma.user.findFirst({
-            where: {
-                email: email,
-            },
-        }))
-            ? true
-            : false;
-
-    const emails = (await currentUser())?.emailAddresses;
-
-    if (!emails) {
-        return false;
-    }
-
-    for (const email of emails) {
-        const hasAccess = await checkIfUserHasAccess(email.emailAddress);
-        if (hasAccess) {
-            return true;
-        }
-    }
-
-    return false;
-};
-
 const GatedActions = async () => {
     const hasAccess = await getHasDashboardAccess();
 
@@ -96,7 +70,7 @@ const GatedActions = async () => {
                 <div className='flex flex-row gap-4'>
                     <button
                         formAction={initNewSem}
-                        className='bg-gray-600 hover:bg-gray-800 transition-all text-white font-semibold py-2 px-4 rounded'
+                        className='border-2 border-red-600 text-red-600 bg-white hover:bg-gray-200 transition-all font-semibold py-2 px-4 rounded'
                     >
                         Initiate New Semester
                     </button>
@@ -148,6 +122,32 @@ const GatedActions = async () => {
             </form>
         </div>
     );
+};
+
+const getHasDashboardAccess = async () => {
+    const checkIfUserHasAccess = async (email: string) =>
+        (await prisma.user.findFirst({
+            where: {
+                email: email,
+            },
+        }))
+            ? true
+            : false;
+
+    const emails = (await currentUser())?.emailAddresses;
+
+    if (!emails) {
+        return false;
+    }
+
+    for (const email of emails) {
+        const hasAccess = await checkIfUserHasAccess(email.emailAddress);
+        if (hasAccess) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 export default GatedActions;
