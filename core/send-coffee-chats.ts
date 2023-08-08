@@ -1,6 +1,7 @@
 import slackClient from "../lib/clients/slack";
 import prisma from "../lib/clients/prisma";
 import { listToSet, oDefIn, pairList } from "../lib/utils";
+import { generateMessage } from "@/lib/data/coffeechat";
 
 const coffeeChatChannelId = oDefIn(process.env.COFFEE_CHAT_CHANNEL_ID);
 
@@ -77,7 +78,7 @@ const haveBeenPaired = async (user1Id: string, user2Id: string) => {
  * This function sends a DM to the users with the coffee chat message.
  */
 const sendDM = async (user1: string, user2: string) => {
-    const message = generateMessage(user1, user2);
+    const message = generateMessage(user1, user2, coffeeChatChannelId);
     const { channel } = await slackClient.conversations.open({
         users: `${user1},${user2}`,
     });
@@ -88,15 +89,6 @@ const sendDM = async (user1: string, user2: string) => {
         text: message,
     });
 };
-
-export const generateMessage = (user1: string, user2: string) => `
-Hello <@${user1}> and <@${user2}>!
-
-I'm your friendly neighborhood :robot_face:, here to help you get to know your teammates by pairing everyone on a weekly basis! 
-
-Anyway, now that you're here, why don't you pick a time to meet for :coffee:, :tea:, :hamburger:, or :doughnut:s? Make sure you take quality, wholesome pictures to post in <#CDXU35346>!
-
-_Not interested? You can opt out of future pairings by leaving the <#${coffeeChatChannelId}> channel._`;
 
 /**
  * This function does the main work of pairing up the users for coffee chats.

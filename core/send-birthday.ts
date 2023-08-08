@@ -1,15 +1,9 @@
 import slackClient from "../lib/clients/slack";
 import prisma from "../lib/clients/prisma";
 import { oDefIn } from "../lib/utils";
+import { generateAttachment, generateMessage } from "@/lib/data/birthday";
 
 const birthdayChannelID = oDefIn(process.env.BIRTHDAY_CHANNEL_ID);
-
-const generateMessage = (user: string) => `
-Happy Birthday <@${user}>!
-
-May this special day bring you lots of happiness, tons of pizza and thousands of nice wishes! Though I’m just a bot, my love to you is true and sincere.
-
-All the best. We love you!! :heart:`;
 
 /**
  * This function sends a DM to the Birthday Channel tagging the user!
@@ -18,6 +12,7 @@ const sendMessage = async (user: string) =>
     await slackClient.chat.postMessage({
         channel: birthdayChannelID,
         text: generateMessage(user),
+        attachments: [generateAttachment()],
     });
 
 /**

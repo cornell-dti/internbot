@@ -17,6 +17,7 @@ test("sendBirthdayMessages sends birthday messages when the bot is enabled", asy
     expect(slackMock.chat.postMessage).toBeCalledWith({
         channel: expect.any(String),
         text: expect.any(String),
+        attachments: expect.any(Array),
     });
 });
 
