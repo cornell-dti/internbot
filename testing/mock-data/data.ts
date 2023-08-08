@@ -1,16 +1,17 @@
 // Mock data for the Prisma and Slack clients
 
+// prettier-ignore
 export const mockUsers = [
-    { id: "U01", name: "User1", email: "u01@gmail.com" },
-    { id: "U02", name: "User2", email: "u02@gmail.com" },
-    { id: "U03", name: "User3", email: "u03@gmail.com" },
-    { id: "U04", name: "User4", email: "u04@gmail.com" },
-    { id: "U05", name: "User5", email: "u05@gmail.com" },
-    { id: "U06", name: "User6", email: "u06@gmail.com" },
-    { id: "U07", name: "User7", email: "u06@gmail.com" },
-    { id: "U08", name: "User8", email: "u06@gmail.com" },
-    { id: "U09", name: "User9", email: "u06@gmail.com" },
-    { id: "U10", name: "User10", email: "u10@gmail.com" },
+    { id: "U01", name: "User1", email: "u01@gmail.com", birthday: new Date("2002-11-06") },
+    { id: "U02", name: "User2", email: "u02@gmail.com", birthday: new Date("2002-08-07") },
+    { id: "U03", name: "User3", email: "u03@gmail.com", birthday: new Date("2002-10-10") },
+    { id: "U04", name: "User4", email: "u04@gmail.com", birthday: new Date("2002-12-12") },
+    { id: "U05", name: "User5", email: "u05@gmail.com", birthday: new Date("2002-01-01") },
+    { id: "U06", name: "User6", email: "u06@gmail.com", birthday: new Date("2003-02-02") },
+    { id: "U07", name: "User7", email: "u06@gmail.com", birthday: new Date() },
+    { id: "U08", name: "User8", email: "u06@gmail.com", birthday: new Date("2003-04-04") },
+    { id: "U09", name: "User9", email: "u06@gmail.com", birthday: new Date("2003-05-05") },
+    { id: "U10", name: "User10", email: "u10@gmail.com", birthday: new Date() },
 ];
 
 export const mockServers = {

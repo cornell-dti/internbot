@@ -2,6 +2,8 @@ import { currentUser } from "@clerk/nextjs";
 import prisma from "../../../lib/clients/prisma";
 import { addUserOrUpdateBirthday } from "@/core/add-birthday";
 import { exec as execCoffeeChats } from "@/core/send-coffee-chats";
+import { exec as execNewSem } from "@/core/new-semester";
+import { exec as execBirthdays } from "@/core/send-birthday";
 import { toggleCurrentBotStatus } from "@/core/bot-status";
 import { Power } from "lucide-react";
 import Help from "@/components/help";
@@ -64,9 +66,19 @@ const GatedActions = async () => {
         await execCoffeeChats();
     };
 
+    const sendBirthdayMessages = async () => {
+        "use server";
+        await execBirthdays();
+    };
+
     const toggleBot = async () => {
         "use server";
         await toggleCurrentBotStatus();
+    };
+
+    const initNewSem = async () => {
+        "use server";
+        await execNewSem();
     };
 
     return (
@@ -80,6 +92,27 @@ const GatedActions = async () => {
                         <Power className='inline-block -mt-1' />
                     </button>
                     <Help text='Enable/Disable the Bot' />
+                </div>
+                <div className='flex flex-row gap-4'>
+                    <button
+                        formAction={initNewSem}
+                        className='bg-gray-600 hover:bg-gray-800 transition-all text-white font-semibold py-2 px-4 rounded'
+                    >
+                        Initiate New Semester
+                    </button>
+                    <Help
+                        text='Populate the database with the latest data from Slack,
+                    and create a new semester based on the current time.'
+                    />
+                </div>
+                <div className='flex flex-row gap-4'>
+                    <button
+                        formAction={sendBirthdayMessages}
+                        className='bg-gray-600 hover:bg-gray-800 transition-all text-white font-semibold py-2 px-4 w-fit rounded'
+                    >
+                        Send Birthday Messages
+                    </button>
+                    <Help text='Manually send out birthday messages for the day!' />
                 </div>
                 <div className='flex flex-row gap-4'>
                     <button

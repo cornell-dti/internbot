@@ -21,6 +21,8 @@ beforeEach(() => {
 const initMocks = (prismaMock: DeepMockProxy<PrismaClient>) => {
     // Mock: resolve instantly to get all semesters.
     prismaMock.semester.findMany.mockResolvedValue(mockSemesters);
+    // Mock: resolve instantly to get all users.
+    prismaMock.user.findMany.mockResolvedValue(mockUsers as any);
     // Mock: implementation of the findMany method to filter pairings.
     prismaMock.pair.findMany.mockImplementation(
         (params): PrismaPromise<Pair[]> => {

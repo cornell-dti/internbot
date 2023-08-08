@@ -34,5 +34,6 @@ test("sendCoffeeChats does nothing when the bot is disabled", async () => {
     // Call the sendCoffeeChats function
     await sendCoffeeChats();
     // Verify the Prisma and Slack client methods were called correctly
-    expect(prismaMock.semester.findMany).not.toBeCalled(); // When the bot is disabled, no other methods should be called
+    expect(prismaMock.semester.findMany).not.toBeCalled();
+    expect(slackMock.chat.postMessage).not.toBeCalled();
 });
