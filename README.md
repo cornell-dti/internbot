@@ -51,7 +51,7 @@ pnpm test                 # Run Tests
 -   [x] Add Github Actions for testing.
 -   [x] Add unit tests for pairing algorithm, including when bot is disabled.
 -   [x] Add unit tests for birthday messaging, including when bot is disabled.
--   [ ] Add unit tests for populating the database.
+-   [ ] Add unit tests for populating the database correctly.
 -   [ ] Add unit tests for all components.
 
 ### Improvements
