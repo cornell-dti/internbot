@@ -57,6 +57,6 @@ pnpm test                 # Run Tests
 ### Improvements
 
 -   [x] Polish up the UI.
-    -   [ ] Bulk Editing ?
+-   [ ] Allow admins to bulk edit user birthdays, activity, etc.
 -   [ ] Add migration scripts for clearing out old semesters, schema changes, etc.
 -   [ ] Add remaining cronjob in `oldvercel.json` to `vercel.json`.
