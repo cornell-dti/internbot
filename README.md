@@ -33,6 +33,9 @@ pnpm install              # Install Dependencies
 pnpm dlx prisma generate  # Generate Prisma type definitions
 pnpm dev                  # Start Development Server
 pnpm test                 # Run Tests
+pnpm deploy               # Deploy to Vercel
+```
+
 ```
 
 ## Roadmap
@@ -60,3 +63,4 @@ pnpm test                 # Run Tests
 -   [ ] Allow admins to bulk edit user birthdays, activity, etc.
 -   [ ] Add migration scripts for clearing out old semesters, schema changes, etc.
 -   [ ] Add remaining cronjob in `oldvercel.json` to `vercel.json`.
+```
