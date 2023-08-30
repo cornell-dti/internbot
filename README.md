@@ -59,3 +59,4 @@ pnpm test                 # Run Tests
 -   [x] Polish up the UI.
     -   [ ] Bulk Editing ?
 -   [ ] Add migration scripts for clearing out old semesters, schema changes, etc.
+-   [ ] Add remaining cronjob in `oldvercel.json` to `vercel.json`.
