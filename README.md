@@ -36,8 +36,6 @@ pnpm test                 # Run Tests
 pnpm deploy               # Deploy to Vercel
 ```
 
-```
-
 ## Roadmap
 
 ### Features
@@ -61,6 +59,6 @@ pnpm deploy               # Deploy to Vercel
 
 -   [x] Polish up the UI.
 -   [ ] Allow admins to bulk edit user birthdays, activity, etc.
+-   [ ] Add a separate model for Admins that's separate from All-Members-in-Slack. Block access to gated actions unless specifically an Admin. Allow old Admins to set new Admins.
 -   [ ] Add migration scripts for clearing out old semesters, schema changes, etc.
 -   [ ] Add remaining cronjob in `oldvercel.json` to `vercel.json`.
-```
