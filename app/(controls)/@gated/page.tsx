@@ -1,10 +1,10 @@
 import { currentUser } from "@clerk/nextjs";
-import prisma from "../../../lib/clients/prisma";
 import Help from "@/components/ui/help";
 import ToggleBot from "@/components/actions/toggle-bot";
 import InitSem from "@/components/actions/init-sem";
 import ManualTriggers from "@/components/actions/manual-triggers";
 import SetSomeonesBday from "@/components/actions/set-someones-bday";
+import admins from "@/lib/data/admins";
 
 const GatedActions = async () => {
     const hasAccess = await getHasDashboardAccess();
@@ -15,7 +15,7 @@ const GatedActions = async () => {
                 <span className='text-gray-400 border-gray-200 p-2 border-2 rounded-lg'>
                     Some actions are hidden.
                 </span>
-                <Help text='You do not have admin access. Your email was not found in the Cornell Slack database.' />
+                <Help text='You do not have admin access.' />
             </div>
         );
     }
@@ -32,13 +32,7 @@ const GatedActions = async () => {
 
 const getHasDashboardAccess = async () => {
     const checkIfUserHasAccess = async (email: string) =>
-        (await prisma.user.findFirst({
-            where: {
-                email: email,
-            },
-        }))
-            ? true
-            : false;
+        admins.some((admin) => admin.email === email);
 
     const emails = (await currentUser())?.emailAddresses;
 

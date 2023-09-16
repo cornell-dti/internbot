@@ -4,6 +4,20 @@ Simple serverless Slack bot for DTI Coffee Chats and Birthday messages!
 
 Should pair up people in the `#coffee-chats` channel every week.
 
+## Functionality
+
+If you're a regular member, you should only be able to login, edit your own birthday, or report on whether the bot is up or down.
+
+If you're an admin, you should be able to login, edit your own birthday, edit other people's birthdays, toggle the bot on or off, and also manually initiate a new semester, or trigger a round of coffee chats or birthday wishes as needed.
+
+## New to Internbot?
+
+If you're a new Lead, make a PR to add yourself to the array of admins in `lib/data/admins.ts` and merge it in. Then, login with Google and you should have access to the admin panel!
+
+If you're a regular member, just login with Google.
+
+For **everyone**, please login with your Cornell email.
+
 ## Technology
 
 Built with Vercel, PostgreSQL, Prisma, Next.js, Jest, and TypeScript.
@@ -59,6 +73,6 @@ pnpm deploy               # Deploy to Vercel
 
 -   [x] Polish up the UI.
 -   [ ] Allow admins to bulk edit user birthdays, activity, etc.
--   [ ] Add a separate model for Admins that's separate from All-Members-in-Slack. Block access to gated actions unless specifically an Admin. Allow old Admins to set new Admins.
+-   [ ] Add a separate model for Admins that's separate from All-Members-in-Slack, instead of keeping admins in a data file. Block access to gated actions unless specifically an Admin. Allow old Admins to set new Admins.
 -   [ ] Add migration scripts for clearing out old semesters, schema changes, etc.
 -   [ ] Add remaining cronjob in `oldvercel.json` to `vercel.json`.
