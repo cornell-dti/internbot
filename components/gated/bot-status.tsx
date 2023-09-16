@@ -8,7 +8,6 @@ const ToggleBotStatus = () => {
     };
 
     return (
-        // @ts-expect-error
         <form action={toggle}>
             <button type='submit'>Toggle Bot Enabled/Disabled</button>
         </form>

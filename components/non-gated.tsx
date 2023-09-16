@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import BotStatus from "./non-gated/bot-status";
 import PopulateNewSemester from "./non-gated/new-semester";
+import BotStatus from "@/components/ui/bot-status";
 
 const NonGatedComponents = () => {
     return (

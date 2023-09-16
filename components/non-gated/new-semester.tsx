@@ -8,7 +8,6 @@ export default function PopulateNewSemester() {
     }
 
     return (
-        // @ts-expect-error
         <form action={action}>
             <button type='submit'>Populate Database</button>
         </form>

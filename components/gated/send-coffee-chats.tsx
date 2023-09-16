@@ -7,7 +7,6 @@ const SendCoffeeChats = () => {
     };
 
     return (
-        // @ts-expect-error
         <form action={action}>
             <button type='submit'>Manually send a round of coffee chats</button>
         </form>
