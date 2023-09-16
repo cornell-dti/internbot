@@ -7,6 +7,7 @@
     "scripts": {
         "dev": "pnpm dlx prisma generate && next dev",
         "build": "pnpm dlx prisma generate && pnpm dlx prisma db push && next build",
+        "deploy": "vercel --prod",
         "test": "jest",
         "start": "next start",
         "lint": "next lint"

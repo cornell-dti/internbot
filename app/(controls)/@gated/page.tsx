@@ -5,6 +5,7 @@ import ToggleBot from "@/components/actions/toggle-bot";
 import InitSem from "@/components/actions/init-sem";
 import ManualTriggers from "@/components/actions/manual-triggers";
 import SetSomeonesBday from "@/components/actions/set-someones-bday";
+import admins from "@/lib/data/admins";
 
 const GatedActions = async () => {
     const hasAccess = await getHasDashboardAccess();
@@ -32,13 +33,7 @@ const GatedActions = async () => {
 
 const getHasDashboardAccess = async () => {
     const checkIfUserHasAccess = async (email: string) =>
-        (await prisma.user.findFirst({
-            where: {
-                email: email,
-            },
-        }))
-            ? true
-            : false;
+        admins.some((admin) => admin.email === email);
 
     const emails = (await currentUser())?.emailAddresses;
 

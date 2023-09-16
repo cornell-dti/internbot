@@ -19,7 +19,7 @@ const SetSomeonesBday = () => {
 
     return (
         <div>
-            <LabelDivider text='Edit My Birthday' />
+            <LabelDivider text='Edit a Birthday' />
             <form action={addBirthday} className='flex flex-col gap-2'>
                 <input
                     type='email'
