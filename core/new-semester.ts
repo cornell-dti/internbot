@@ -31,29 +31,25 @@ export const populate = async () => {
         ) || [];
 
     // prettier-ignore
-    const users = await Promise.all(
-        humans.map((human) =>
-            fLetDefIn(human.id, (memID) =>
-            fLetDefIn(human.name, (memName) =>
-            fLetIn(human.profile?.email, (memEmail) =>
-                memEmail &&
-                prisma.user.upsert({
-                    where: { id: memID },
-                    update: {},
-                    create: {
-                        name: memName,
-                        email: memEmail,
-                        id: memID,
-                        server: { 
-                            connect: { 
-                                id: teamID
-                            } 
-                        },
-                        birthday: null,
-                    },
-                })
-        ))))
-    );
+    for (const human of humans) {
+        if (!human.id || !human.name) continue;
+
+        prisma.user.upsert({
+            where: { id: human.id },
+            update: {},
+            create: {
+                name: human.name,
+                email: human.profile?.email,
+                id: human.id,
+                server: { 
+                    connect: { 
+                        id: teamID
+                    } 
+                },
+                birthday: null,
+            },
+        })
+    }
 
     // Create/update semester
     const breakpoint = 6;
@@ -70,19 +66,16 @@ export const populate = async () => {
     });
 
     // Add users to the new semester
-    const semesterToUser = await Promise.all(
-        humans.map(
-            ({ id }) =>
-                id &&
-                prisma.semesterToUser.create({
-                    data: {
-                        userId: id,
-                        semesterId: semester.id,
-                        active: true,
-                    },
-                })
-        )
-    );
+    for (const human of humans) {
+        if (!human.id) continue;
+        prisma.semesterToUser.create({
+            data: {
+                userId: human.id,
+                semesterId: semester.id,
+                active: true,
+            },
+        });
+    }
 };
 
 export const exec = async () => {

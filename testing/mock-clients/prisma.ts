@@ -51,6 +51,14 @@ const initMocks = (prismaMock: DeepMockProxy<PrismaClient>) => {
         user2Id: "N/A 2",
         semesterId: 1,
     });
+
+    // Mock:
+    prismaMock.semester.create.mockResolvedValue({
+        id: 1,
+        name: "Example Semester",
+        startDate: new Date(),
+        endDate: new Date(),
+    });
 };
 
 export const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;

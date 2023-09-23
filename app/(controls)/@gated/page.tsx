@@ -16,7 +16,7 @@ const GatedActions = async () => {
                 <span className='text-gray-400 border-gray-200 p-2 border-2 rounded-lg'>
                     Some actions are hidden.
                 </span>
-                <Help text='You do not have admin access. Your email was not found in the Cornell Slack database.' />
+                <Help text='You do not have admin access.' />
             </div>
         );
     }

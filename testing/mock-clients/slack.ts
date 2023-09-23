@@ -25,6 +25,22 @@ const initMocks = (slackMock: DeepMockProxy<WebClient>) => {
         ok: true,
         channel: { id: process.env.COFFEE_CHAT_CHANNEL_ID },
     });
+
+    slackMock.users.list.mockResolvedValue({
+        ok: true,
+        members: mockUsers.map((u) => ({
+            ...u,
+            is_bot: false,
+            deleted: false,
+        })),
+    });
+    slackMock.team.info.mockResolvedValue({
+        ok: true,
+        team: {
+            id: "0",
+            name: "Example Name",
+        },
+    });
 };
 
 export const slackMock = slack as unknown as DeepMockProxy<WebClient>;
